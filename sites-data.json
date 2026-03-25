@@ -1,0 +1,177 @@
+{
+  "_comment": "사이트별 CPC 추정 데이터 — 직접 수정 가능. 단위: 원(KRW)",
+  "_updated": "2025-03",
+  "_source": "업종 특성·경쟁 구조·평균 객단가 기반 추정치 (실제 광고 플랫폼 데이터 아님)",
+
+  "sites": {
+    "coupang": {
+      "name": "쿠팡",
+      "domain": "coupang.com",
+      "industry": "ecommerce",
+      "desc": "국내 최대 이커머스 플랫폼으로 로켓배송, 신선식품, 로켓직구 서비스를 제공합니다.",
+      "why": "취급 카테고리가 전방위적이고 경쟁 셀러 수가 최다. 특히 가전·건강기능식품·패션 카테고리 CPC 높음.",
+      "cpc": {
+        "google": { "min": 500, "avg": 1100, "max": 2800 },
+        "naver":  { "min": 400, "avg": 850,  "max": 2100 },
+        "meta":   { "min": 250, "avg": 560,  "max": 1400 },
+        "kakao":  { "min": 180, "avg": 430,  "max": 1100 }
+      }
+    },
+    "musinsa": {
+      "name": "무신사",
+      "domain": "musinsa.com",
+      "industry": "fashion",
+      "desc": "국내 최대 온라인 패션 플랫폼으로 스트릿·캐주얼 브랜드를 큐레이션합니다.",
+      "why": "패션 버티컬 중 점유율 1위. 브랜드들이 무신사 내 트래픽을 외부 광고로 유인하려는 경쟁 있음.",
+      "cpc": {
+        "google": { "min": 400, "avg": 820,  "max": 1900 },
+        "naver":  { "min": 300, "avg": 640,  "max": 1600 },
+        "meta":   { "min": 220, "avg": 480,  "max": 1200 },
+        "kakao":  { "min": 160, "avg": 350,  "max": 900  }
+      }
+    },
+    "toss": {
+      "name": "토스",
+      "domain": "toss.im",
+      "industry": "finance",
+      "desc": "핀테크 슈퍼앱. 대출·투자·보험 등 금융 전 영역 경쟁.",
+      "why": "금융업은 국내 최고 CPC 업종. 토스는 모든 금융 카테고리를 커버해 경쟁사가 은행·보험·증권 등 전방위.",
+      "cpc": {
+        "google": { "min": 1800, "avg": 3800, "max": 7500 },
+        "naver":  { "min": 1400, "avg": 2900, "max": 6000 },
+        "meta":   { "min": 800,  "avg": 1600, "max": 3500 },
+        "kakao":  { "min": 600,  "avg": 1300, "max": 3000 }
+      }
+    },
+    "kakaobank": {
+      "name": "카카오뱅크",
+      "domain": "kakaobank.com",
+      "industry": "finance",
+      "desc": "인터넷전문은행. 대출·예금·카드 키워드 경쟁 극심.",
+      "why": "인터넷은행 중 1위. 대출·예금 키워드는 국내에서 가장 비싼 CPC 군에 속함.",
+      "cpc": {
+        "google": { "min": 1600, "avg": 3400, "max": 6800 },
+        "naver":  { "min": 1200, "avg": 2600, "max": 5500 },
+        "meta":   { "min": 700,  "avg": 1400, "max": 3200 },
+        "kakao":  { "min": 500,  "avg": 1100, "max": 2800 }
+      }
+    },
+    "yanolja": {
+      "name": "야놀자",
+      "domain": "yanolja.com",
+      "industry": "travel",
+      "desc": "숙박·레저 슈퍼앱. 시즌 피크 시 CPC 급등.",
+      "why": "여행 성수기(여름·연휴) CPC 2배 이상 급등. 숙박·펜션·호텔 키워드 경쟁 높음.",
+      "cpc": {
+        "google": { "min": 500, "avg": 1050, "max": 2600 },
+        "naver":  { "min": 380, "avg": 800,  "max": 2000 },
+        "meta":   { "min": 250, "avg": 520,  "max": 1300 },
+        "kakao":  { "min": 190, "avg": 400,  "max": 1000 }
+      }
+    },
+    "baemin": {
+      "name": "배달의민족",
+      "domain": "baemin.com",
+      "industry": "food",
+      "desc": "국내 1위 배달앱. 지역 기반이라 단가 상대적으로 낮음.",
+      "why": "배달은 지역 타겟팅 중심. 전국 단위 경쟁이 적어 CPC 상대적으로 낮지만 식품·프랜차이즈 키워드는 경쟁 있음.",
+      "cpc": {
+        "google": { "min": 200, "avg": 480,  "max": 1100 },
+        "naver":  { "min": 150, "avg": 360,  "max": 900  },
+        "meta":   { "min": 120, "avg": 280,  "max": 700  },
+        "kakao":  { "min": 90,  "avg": 210,  "max": 550  }
+      }
+    },
+    "kurly": {
+      "name": "마켓컬리",
+      "domain": "kurly.com",
+      "industry": "food",
+      "desc": "프리미엄 신선식품 새벽배송. 높은 객단가 = 높은 CPC.",
+      "why": "프리미엄 식품 특성상 객단가 높고 경쟁사(SSG, 오아시스 등) 동일 키워드 입찰.",
+      "cpc": {
+        "google": { "min": 300, "avg": 680,  "max": 1600 },
+        "naver":  { "min": 230, "avg": 520,  "max": 1300 },
+        "meta":   { "min": 170, "avg": 390,  "max": 980  },
+        "kakao":  { "min": 130, "avg": 300,  "max": 750  }
+      }
+    },
+    "gangnamunni": {
+      "name": "강남언니",
+      "domain": "gangnamunni.com",
+      "industry": "healthcare",
+      "desc": "성형·피부과 O2O. 의료 광고는 규제+경쟁 이중으로 CPC 매우 높음.",
+      "why": "성형·피부과 키워드는 의료업 중 최고 CPC. 병원들이 직접 입찰해 플랫폼과 경쟁하는 구조.",
+      "cpc": {
+        "google": { "min": 1200, "avg": 2600, "max": 5500 },
+        "naver":  { "min": 900,  "avg": 2000, "max": 4500 },
+        "meta":   { "min": 500,  "avg": 1100, "max": 2600 },
+        "kakao":  { "min": 400,  "avg": 900,  "max": 2200 }
+      }
+    },
+    "zigzag": {
+      "name": "지그재그",
+      "domain": "zigzag.kr",
+      "industry": "fashion",
+      "desc": "여성 패션 전문 앱. 20대 여성 집중 타겟.",
+      "why": "여성 패션 버티컬. 에이블리·무신사우먼 등과 동일 키워드 경쟁.",
+      "cpc": {
+        "google": { "min": 300, "avg": 660,  "max": 1600 },
+        "naver":  { "min": 240, "avg": 510,  "max": 1300 },
+        "meta":   { "min": 190, "avg": 440,  "max": 1100 },
+        "kakao":  { "min": 140, "avg": 320,  "max": 820  }
+      }
+    },
+    "ably": {
+      "name": "에이블리",
+      "domain": "a-bly.com",
+      "industry": "fashion",
+      "desc": "20대 여성 타겟 패션 쇼핑 앱.",
+      "why": "지그재그와 유사하나 보다 저가 상품 비중 높아 CPC 소폭 낮음.",
+      "cpc": {
+        "google": { "min": 280, "avg": 600,  "max": 1500 },
+        "naver":  { "min": 210, "avg": 460,  "max": 1150 },
+        "meta":   { "min": 170, "avg": 400,  "max": 1000 },
+        "kakao":  { "min": 130, "avg": 300,  "max": 750  }
+      }
+    },
+    "inflearn": {
+      "name": "인프런",
+      "domain": "inflearn.com",
+      "industry": "edu",
+      "desc": "개발·IT 교육 플랫폼. B2C/B2B 모두 타겟.",
+      "why": "IT 개발 교육 키워드는 B2B 수요와 겹쳐 CPC 교육 업종 평균보다 높음.",
+      "cpc": {
+        "google": { "min": 600, "avg": 1350, "max": 3200 },
+        "naver":  { "min": 460, "avg": 1050, "max": 2500 },
+        "meta":   { "min": 280, "avg": 640,  "max": 1600 },
+        "kakao":  { "min": 210, "avg": 490,  "max": 1250 }
+      }
+    },
+    "classu": {
+      "name": "클래스유",
+      "domain": "classu.co.kr",
+      "industry": "edu",
+      "desc": "크리에이터 기반 온라인 클래스. 일반 교육보다 CPC 낮음.",
+      "why": "취미/라이프스타일 강의 비중 높아 IT 교육 대비 경쟁 낮음.",
+      "cpc": {
+        "google": { "min": 400, "avg": 900,  "max": 2200 },
+        "naver":  { "min": 300, "avg": 700,  "max": 1750 },
+        "meta":   { "min": 200, "avg": 460,  "max": 1150 },
+        "kakao":  { "min": 150, "avg": 350,  "max": 880  }
+      }
+    },
+    "coloso": {
+      "name": "콜로소",
+      "domain": "coloso.com",
+      "industry": "edu",
+      "desc": "디자인·크리에이티브 전문 클래스.",
+      "why": "디자인 교육 니치 마켓. 클래스101 등과 동일 키워드 경쟁.",
+      "cpc": {
+        "google": { "min": 380, "avg": 860,  "max": 2100 },
+        "naver":  { "min": 290, "avg": 660,  "max": 1650 },
+        "meta":   { "min": 190, "avg": 440,  "max": 1100 },
+        "kakao":  { "min": 140, "avg": 330,  "max": 840  }
+      }
+    }
+  }
+}

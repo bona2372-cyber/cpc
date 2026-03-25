@@ -1,0 +1,14 @@
+{
+  "name": "cpc-pro",
+  "version": "1.0.0",
+  "description": "CPC 분석 대시보드",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . \"CPC Pro\" --platform=win32 --arch=x64 --out=dist --overwrite --asar --ignore=dist"
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-packager": "^17.0.0"
+  }
+}

@@ -1,0 +1,2715 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPC Pro</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CPC Pro">
+<meta name="theme-color" content="#8b7fd4">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: linear-gradient(135deg,#e4e0f5 0%,#ede8f8 45%,#f5e8f2 100%);
+  --shell-bg: #ffffff;
+  --sidebar-bg: #ffffff;
+  --main-bg: #f5f3fc;
+  --card: #ffffff;
+  --card2: #f8f6fd;
+  --border: #ede8f5;
+  --text: #2a2440;
+  --muted: #9e96b8;
+  --accent: #8b7fd4;
+  --accent2: #a99de8;
+  --accent-light: #f0edfb;
+  --accent-grad: linear-gradient(135deg,#8b7fd4 0%,#a99de8 100%);
+  --good:#4caf82; --good-bg:#eaf7f1;
+  --warn:#e8964a; --warn-bg:#fdf3e8;
+  --bad:#e86060;  --bad-bg:#fdf0f0;
+  --shadow: 0 2px 20px rgba(100,80,180,0.07);
+  --shadow-md: 0 8px 36px rgba(100,80,180,0.13);
+  --r:18px; --r-sm:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);min-height:100vh;color:var(--text);font-size:14px;display:flex;align-items:center;justify-content:center;padding:28px;}
+
+/* SHELL */
+.shell{display:flex;width:100%;max-width:1300px;height:calc(100vh - 56px);min-height:600px;background:var(--shell-bg);border-radius:26px;box-shadow:0 24px 80px rgba(80,60,160,0.13),0 4px 20px rgba(80,60,160,0.06);overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;background:var(--sidebar-bg);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 16px;}
+.logo{padding:2px 10px 28px;}
+.logo-icon{display:none;}
+.logo-name{font-size:17px;font-weight:700;letter-spacing:-0.4px;color:var(--text);}
+.logo-name span{color:var(--accent);}
+.nav-lbl{font-size:10px;font-weight:600;color:#c4bedd;text-transform:uppercase;letter-spacing:1.4px;padding:12px 10px 8px;}
+.nav-item{display:flex;align-items:center;padding:11px 16px;border-radius:12px;cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:500;transition:all .18s;border:none;background:none;width:100%;text-align:left;letter-spacing:-0.1px;}
+.nav-item:hover{background:var(--accent-light);color:var(--accent);}
+.nav-item.active{background:var(--accent-grad);color:#fff;box-shadow:0 4px 16px rgba(139,127,212,0.35);}
+.nav-ico{display:none;}
+.sidebar-divider{height:1px;background:var(--border);margin:16px 0;}
+.sidebar-foot{margin-top:auto;padding-top:16px;}
+.ai-badge{background:var(--accent-light);border-radius:12px;padding:13px 15px;font-size:11px;color:var(--accent);font-weight:600;line-height:1.8;border:1px solid #ddd8f5;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;background:var(--main-bg);overflow:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 30px 18px;background:var(--shell-bg);border-bottom:1px solid var(--border);flex-shrink:0;}
+.topbar-left .topbar-sub{font-size:12px;color:var(--accent);font-weight:600;margin-bottom:3px;letter-spacing:0.2px;}
+.topbar-left .topbar-title{font-size:26px;font-weight:700;letter-spacing:-0.6px;color:var(--text);}
+.topbar-badge{background:var(--accent-light);color:var(--accent);border-radius:20px;padding:7px 16px;font-size:11px;font-weight:600;border:1px solid #ddd8f5;}
+.scroll{flex:1;overflow-y:auto;padding:26px 30px;}
+.scroll::-webkit-scrollbar{width:4px;}
+.scroll::-webkit-scrollbar-thumb{background:#d8d0ee;border-radius:2px;}
+
+/* SECTIONS */
+.sec{display:none;}
+.sec.active{display:block;}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:16px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-hdr-title{font-size:15px;font-weight:600;color:var(--text);}
+.card-hdr-link{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer;}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.mb16{margin-bottom:16px;} .mb20{margin-bottom:20px;}
+
+/* STAT */
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow);}
+.stat-icon{display:none;}
+.stat-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;}
+.stat-val{font-size:24px;font-weight:700;letter-spacing:-0.6px;color:var(--text);}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* HERO → 흰 카드 스타일 */
+.hero{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:26px 28px;margin-bottom:18px;box-shadow:var(--shadow);}
+.hero h2{font-size:18px;font-weight:700;margin-bottom:6px;letter-spacing:-0.3px;color:var(--text);}
+.hero p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px;}
+.url-row{display:flex;gap:8px;background:var(--main-bg);border:1.5px solid var(--border);border-radius:12px;padding:6px 6px 6px 16px;}
+.url-row:focus-within{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(139,127,212,0.12);}
+.url-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;}
+.url-input::placeholder{color:var(--muted);}
+.btn-analyze{background:var(--accent-grad);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;box-shadow:0 3px 12px rgba(139,127,212,0.35);}
+.btn-analyze:hover{opacity:.88;transform:translateY(-1px);}
+.btn-analyze:active{transform:scale(.97);}
+.btn-analyze:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;}
+.chip{background:var(--accent-light);border:1px solid #ddd8f5;border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);cursor:pointer;transition:all .15s;font-weight:500;}
+.chip:hover{background:#e8e2f8;border-color:var(--accent);}
+
+/* LOADING */
+.loading{text-align:center;padding:52px 0;display:none;}
+.spinner{width:34px;height:34px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-txt{color:var(--muted);font-size:13px;}
+.load-txt span{color:var(--accent);font-weight:600;}
+
+/* ERROR */
+.err-box{background:var(--bad-bg);border:1px solid #f5c0c0;border-radius:var(--r-sm);padding:13px 16px;color:var(--bad);font-size:13px;display:none;margin-bottom:14px;}
+
+/* RESULT */
+.result{animation:fadeUp .3s ease;display:none;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+.site-hdr{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;margin-bottom:14px;box-shadow:var(--shadow);}
+.site-emo{display:none;}
+.site-name{font-size:18px;font-weight:700;margin-bottom:4px;}
+.site-url{font-size:12px;color:var(--muted);margin-bottom:6px;font-family:monospace;}
+.site-desc{font-size:13px;color:var(--muted);line-height:1.65;}
+.badge-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.badge{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-teal{background:#e8f4ff;color:#3b7fd4;} .b-blue{background:#ede8fb;color:#6b56c8;}
+.b-amber{background:#fdf3e8;color:#c87840;} .b-gray{background:var(--main-bg);color:var(--muted);}
+.b-good{background:var(--good-bg);color:var(--good);} .b-warn{background:var(--warn-bg);color:var(--warn);} .b-bad{background:var(--bad-bg);color:var(--bad);}
+
+.plat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:4px;}
+.plat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:18px 20px;box-shadow:var(--shadow);transition:transform .18s,box-shadow .18s;}
+.plat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.plat-name{font-size:12px;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:7px;font-weight:500;}
+.plat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cpc-range{font-size:20px;font-weight:700;letter-spacing:-0.5px;margin-bottom:2px;}
+.cpc-sub{font-size:11px;color:var(--muted);margin-bottom:11px;}
+.bar-bg{height:5px;border-radius:3px;background:var(--main-bg);overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+.diff-row{display:flex;align-items:center;justify-content:space-between;margin-top:11px;}
+.diff-lbl{font-size:11px;color:var(--muted);flex:1;padding-right:8px;line-height:1.4;}
+.diff-dots{display:flex;gap:3px;}
+.diff-dot{width:7px;height:7px;border-radius:2px;background:var(--border);}
+.diff-dot.on{background:var(--accent);}
+
+.kw-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px 18px;box-shadow:var(--shadow);margin-bottom:4px;}
+.kw-list{display:flex;flex-wrap:wrap;gap:8px;}
+.kw-item{background:var(--main-bg);border:1px solid var(--border);border-radius:9px;padding:6px 13px;font-size:12px;display:flex;align-items:center;gap:9px;}
+.kw-cpc{font-size:11px;color:var(--accent);font-weight:700;}
+.kw-vol{font-size:10px;color:var(--muted);}
+
+.ins-list{display:flex;flex-direction:column;gap:9px;}
+.ins-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px;border-left:3px solid var(--accent);box-shadow:var(--shadow);}
+.ins-ico{display:none;}
+.ins-ttl{font-size:13px;font-weight:600;margin-bottom:4px;}
+.ins-bod{font-size:12px;color:var(--muted);line-height:1.65;}
+
+.budget-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:18px 20px;box-shadow:var(--shadow);}
+.budget-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.budget-row:last-child{border-bottom:none;}
+.budget-lbl{color:var(--muted);}
+.budget-val{font-weight:600;}
+
+.sec-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:22px 0 10px;}
+.reset-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:9px;padding:8px 16px;font-size:12px;cursor:pointer;margin-top:18px;transition:all .15s;}
+.reset-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* BENCHMARK */
+.plat-tabs{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap;}
+.plat-tab{padding:8px 18px;border:1.5px solid var(--border);border-radius:20px;background:var(--card);cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;}
+.plat-tab:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+.plat-tab.active{background:var(--accent-grad);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(139,127,212,0.35);}
+.info-box{background:var(--accent-light);border-radius:var(--r-sm);padding:13px 16px;font-size:13px;color:#6b56c8;margin-bottom:18px;line-height:1.65;border:1px solid #ddd8f5;}
+.chart-wrap{position:relative;width:100%;height:360px;}
+
+/* FORM */
+select.sel,textarea.ta{width:100%;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);outline:none;}
+select.sel{padding:10px 14px;font-size:14px;margin-bottom:12px;appearance:none;cursor:pointer;}
+select.sel:focus{border-color:var(--accent);}
+textarea.ta{padding:12px 14px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;min-height:140px;}
+textarea.ta:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,127,212,0.10);}
+.hint{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.btn-row{display:flex;gap:9px;margin-top:13px;}
+.btn-p{background:var(--accent-grad);color:#fff;border:none;border-radius:9px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;box-shadow:0 4px 14px rgba(139,127,212,0.30);}
+.btn-p:hover{opacity:.86;}
+.btn-s{background:var(--card);color:var(--muted);border:1.5px solid var(--border);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;transition:all .15s;}
+.btn-s:hover{border-color:var(--accent);color:var(--accent);}
+.res-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.res-row:last-child{border-bottom:none;}
+.res-lbl{font-weight:500;}
+.res-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.prog-bar{height:5px;border-radius:3px;background:var(--main-bg);margin-top:6px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:11px 14px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;}
+td{padding:11px 14px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--accent-light);}
+.mini-bar{display:inline-block;height:6px;border-radius:3px;opacity:.5;vertical-align:middle;margin-left:7px;}
+
+.pmenu-item{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 12px;font-size:13px;color:var(--text);cursor:pointer;border-radius:8px;font-family:inherit;transition:background .12s;}
+.pmenu-item:hover{background:var(--accent-light);color:var(--accent);}
+
+@media(max-width:860px){
+  body{padding:0;}
+  .shell{border-radius:0;min-height:100vh;height:100vh;}
+  .sidebar{width:52px;padding:20px 6px;}
+  .logo-name,.nav-lbl,.sidebar-foot{display:none;}
+  .nav-item{justify-content:center;padding:10px;font-size:0;}
+  .nav-item::before{font-size:13px;font-weight:700;color:var(--muted);}
+  .nav-item.active::before{color:#fff;}
+  .nav-item[data-sec=analyzer]::before{content:'검';}
+  .nav-item[data-sec=benchmark]::before{content:'벤';}
+  .nav-item[data-sec=sites]::before{content:'사';}
+  .nav-item[data-sec=campaign]::before{content:'캠';}
+  .nav-item[data-sec=events]::before{content:'이';}
+  .nav-item[data-sec=table]::before{content:'표';}
+  .scroll{padding:18px 16px;}
+  .topbar{padding:14px 18px;}
+  .plat-grid,.g2{grid-template-columns:1fr;}
+  .g4{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-name">CPC<span>Pro</span></div>
+    </div>
+    <div class="nav-lbl">메뉴</div>
+    <button class="nav-item active" data-sec="analyzer">URL 자동 분석</button>
+    <button class="nav-item" data-sec="benchmark">업종별 벤치마크</button>
+    <button class="nav-item" data-sec="sites">사이트 비교</button>
+    <button class="nav-item" data-sec="campaign">캠페인 전략</button>
+    <button class="nav-item" data-sec="events">이벤트 분석</button>
+    <button class="nav-item" data-sec="table">전체 데이터 표</button>
+    <div class="sidebar-foot">
+      <div class="ai-badge">CPC Pro<br>크롤링 기반 분석</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-sub" id="tSub">AI로 CPC를 분석하세요</div>
+        <div class="topbar-title" id="tTitle">URL 자동 분석</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div id="periodLabel" style="font-size:12px;color:var(--muted);font-weight:500"></div>
+        <div style="position:relative">
+          <button id="periodBtn" onclick="togglePeriodMenu()" style="display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <span id="periodBtnLabel">이번 달</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div id="periodMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:6px;min-width:150px;box-shadow:var(--shadow-md);z-index:100">
+            <div style="padding:4px 8px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px">단기</div>
+            <button class="pmenu-item" onclick="setPeriod('today')">오늘</button>
+            <button class="pmenu-item" onclick="setPeriod('yesterday')">어제</button>
+            <button class="pmenu-item" onclick="setPeriod('week')">이번 주</button>
+            <button class="pmenu-item" onclick="setPeriod('lastweek')">지난 주</button>
+            <div style="height:1px;background:var(--border);margin:4px 0"></div>
+            <div style="padding:4px 8px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px">월간</div>
+            <button class="pmenu-item" onclick="setPeriod('month')">이번 달</button>
+            <button class="pmenu-item" onclick="setPeriod('lastmonth')">지난 달</button>
+            <div style="height:1px;background:var(--border);margin:4px 0"></div>
+            <div style="padding:4px 8px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px">장기</div>
+            <button class="pmenu-item" onclick="setPeriod('quarter')">이번 분기</button>
+            <button class="pmenu-item" onclick="setPeriod('year')">올해</button>
+            <button class="pmenu-item" onclick="setPeriod('lastyear')">작년</button>
+            <div style="height:1px;background:var(--border);margin:4px 0"></div>
+            <button class="pmenu-item" onclick="setPeriod('custom')" style="color:var(--accent)">직접 입력</button>
+          </div>
+        </div>
+      </div>
+      <!-- 직접 입력 레이어 -->
+      <div id="customDateLayer" style="display:none;position:fixed;inset:0;background:rgba(40,30,80,0.18);z-index:200;align-items:center;justify-content:center">
+        <div style="background:#fff;border-radius:20px;padding:28px 30px;min-width:320px;box-shadow:var(--shadow-md)">
+          <div style="font-size:15px;font-weight:700;margin-bottom:18px;color:var(--text)">기간 직접 입력</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+            <div>
+              <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px">시작일</div>
+              <input type="date" id="customStart" style="width:100%;border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-size:14px;color:var(--text);outline:none;font-family:inherit">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px">종료일</div>
+              <input type="date" id="customEnd" style="width:100%;border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-size:14px;color:var(--text);outline:none;font-family:inherit">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="applyCustomDate()" style="flex:1;background:var(--accent-grad);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:600;cursor:pointer">적용</button>
+            <button onclick="document.getElementById('customDateLayer').style.display='none'" style="flex:1;background:var(--main-bg);color:var(--muted);border:1.5px solid var(--border);border-radius:9px;padding:10px;font-size:13px;cursor:pointer">취소</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll">
+
+      <!-- SEC 1: URL ANALYZER -->
+      <div class="sec active" id="sec-analyzer">
+        <div class="hero">
+          <h2>사이트 주소만 넣으면 CPC를 자동으로 분석합니다</h2>
+          <p>URL을 입력하면 AI가 업종·타깃·경쟁도를 분석하고<br>Google·Meta·카카오·네이버 예상 CPC와 추천 키워드를 제공합니다.</p>
+          <div class="url-row">
+            <input class="url-input" id="urlInput" type="text" placeholder="https://example.com" />
+            <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">분석하기</button>
+          </div>
+          <div class="chips">
+            <span class="chip" onclick="setUrl('https://coupang.com')">coupang.com</span>
+            <span class="chip" onclick="setUrl('https://musinsa.com')">musinsa.com</span>
+            <span class="chip" onclick="setUrl('https://toss.im')">toss.im</span>
+            <span class="chip" onclick="setUrl('https://classu.co.kr')">classu.co.kr</span>
+            <span class="chip" onclick="setUrl('https://yanolja.com')">yanolja.com</span>
+            <span class="chip" onclick="setUrl('https://gangnamunni.com')">gangnamunni.com</span>
+          </div>
+        </div>
+        <div class="loading" id="loadingState">
+          <div class="spinner"></div>
+          <div class="load-txt">AI가 <span id="loadingUrl"></span> 분석 중...</div>
+        </div>
+        <div class="err-box" id="errorBox"></div>
+        <div class="result" id="resultWrap"></div>
+      </div>
+
+      <!-- SEC 2: BENCHMARK -->
+      <div class="sec" id="sec-benchmark">
+        <div class="info-box">플랫폼을 선택하면 업종별 평균 CPC 벤치마크를 확인할 수 있습니다. 데이터는 2024–2025년 국내외 집행 데이터 기반 추정치입니다.</div>
+        <div class="plat-tabs">
+          <button class="plat-tab active" onclick="setPlatform('google',this)">Google Ads</button>
+          <button class="plat-tab" onclick="setPlatform('meta',this)">Meta Ads</button>
+          <button class="plat-tab" onclick="setPlatform('kakao',this)">카카오 모먼트</button>
+          <button class="plat-tab" onclick="setPlatform('naver',this)">네이버 성과형</button>
+        </div>
+        <div class="g4 mb20" id="benchStats"></div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-hdr-title" id="chartTitle">Google Ads — 업종별 평균 CPC (원)</div></div>
+          <div class="chart-wrap"><canvas id="benchChart"></canvas></div>
+        </div>
+      </div>
+
+
+      <!-- SEC 5: SITES -->
+      <div class="sec" id="sec-sites">
+        <!-- URL 입력 -->
+        <div class="card mb20">
+          <div class="card-title">URL 직접 분석</div>
+          <div style="display:flex;gap:8px">
+            <input id="siteUrlInput" type="text" placeholder="https://example.com" style="flex:1;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;outline:none;color:var(--text);background:var(--card)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')analyzeSiteUrl()"/>
+            <button onclick="analyzeSiteUrl()" style="background:var(--accent-grad);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">분석하기</button>
+          </div>
+          <div id="siteUrlResult" style="margin-top:14px"></div>
+        </div>
+        <div class="info-box">국내 주요 서비스별 예상 CPC 데이터입니다. Google과 네이버 업종 평균 기준으로 산정된 추정치입니다.</div>
+        <div class="g4 mb20" id="siteStatCards"></div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-hdr-title">사이트별 Google · 네이버 예상 CPC</div>
+            <div style="display:flex;gap:7px">
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#4f8eff;font-weight:600"><span style="width:10px;height:10px;border-radius:2px;background:#4f8eff;display:inline-block"></span>Google</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#ef4444;font-weight:600"><span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block"></span>네이버</span>
+            </div>
+          </div>
+          <div id="siteCards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px"></div>
+        </div>
+      </div>
+
+      <!-- SEC 4: TABLE -->
+      <div class="sec" id="sec-table">
+        <div class="card">
+          <div class="card-title">플랫폼별 업종 CPC 벤치마크 전체 표 (원)</div>
+          <div style="overflow-x:auto"><table id="fullTable"></table></div>
+        </div>
+      </div>
+
+      <!-- 이벤트 분석 섹션 -->
+      <div class="sec" id="sec-events">
+        <!-- URL 입력 분석 -->
+        <div class="card" style="margin-bottom:14px;padding:20px 22px">
+          <div class="card-title">URL 입력 → 해당 사이트 이벤트 분석</div>
+          <div style="display:flex;gap:8px">
+            <input id="evtUrlInput" type="text" placeholder="예) coupang.com, toss.im, baemin.com ..."
+              style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 16px;font-size:13px;color:var(--text);background:var(--card2);outline:none;transition:border-color .15s"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')analyzeEvtUrl()">
+            <button onclick="analyzeEvtUrl()" style="background:var(--accent-grad);color:#fff;border:none;border-radius:12px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">분석</button>
+            <button onclick="clearEvtUrl()" style="background:var(--card2);color:var(--muted);border:1.5px solid var(--border);border-radius:12px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer">초기화</button>
+          </div>
+          <div id="evtUrlResult" style="margin-top:14px;display:none"></div>
+        </div>
+        <!-- 필터 바 -->
+        <div class="card" style="margin-bottom:14px;padding:14px 20px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <select id="evtSiteFilter" onchange="renderEvents()" style="border:1.5px solid var(--border);border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--text);background:var(--card);cursor:pointer">
+              <option value="">전체 사이트</option>
+            </select>
+            <select id="evtYearFilter" onchange="renderEvents()" style="border:1.5px solid var(--border);border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--text);background:var(--card);cursor:pointer">
+              <option value="">전체 연도</option>
+              <option value="2026">2026년</option>
+              <option value="2025">2025년</option>
+              <option value="2024">2024년</option>
+            </select>
+            <select id="evtPlatFilter" onchange="renderEvents()" style="border:1.5px solid var(--border);border-radius:10px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--text);background:var(--card);cursor:pointer">
+              <option value="">전체 플랫폼</option>
+              <option value="google">Google</option>
+              <option value="naver">네이버</option>
+              <option value="meta">Meta</option>
+              <option value="kakao">카카오</option>
+              <option value="tv">TV/OTT</option>
+            </select>
+            <div style="margin-left:auto;font-size:12px;color:var(--muted)" id="evtCount"></div>
+          </div>
+        </div>
+        <div id="evtList"></div>
+      </div>
+
+      <!-- 캠페인 전략 섹션 -->
+      <div class="sec" id="sec-campaign">
+        <!-- URL 입력 -->
+        <div class="card" style="margin-bottom:14px;padding:20px 22px">
+          <div class="card-title">URL 입력 → 캠페인 전략 분석</div>
+          <div style="display:flex;gap:8px">
+            <input id="campUrlInput" type="text" placeholder="예) coupang.com, toss.im, musinsa.com ..."
+              style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 16px;font-size:13px;color:var(--text);background:var(--card2);outline:none;transition:border-color .15s"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')analyzeCampUrl()">
+            <button onclick="analyzeCampUrl()" style="background:var(--accent-grad);color:#fff;border:none;border-radius:12px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">분석</button>
+            <button onclick="document.getElementById('campUrlInput').value='';document.getElementById('campSiteFilter').value='';renderCampaign()" style="background:var(--card2);color:var(--muted);border:1.5px solid var(--border);border-radius:12px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer">초기화</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:14px;padding:16px 20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap" id="campPlatTabs">
+              <button class="plat-tab active" onclick="setCampPlatform('all',this)">전체 플랫폼</button>
+              <button class="plat-tab" style="background:#e8f0fe;color:#3367d6;border-color:#c5d5f8" onclick="setCampPlatform('google',this)">Google</button>
+              <button class="plat-tab" style="background:#e6f4ea;color:#137333;border-color:#b7dfbf" onclick="setCampPlatform('naver',this)">네이버</button>
+              <button class="plat-tab" style="background:#fce8e6;color:#c5221f;border-color:#f4b8b5" onclick="setCampPlatform('meta',this)">Meta</button>
+              <button class="plat-tab" style="background:#fef7e0;color:#b06000;border-color:#f5d891" onclick="setCampPlatform('kakao',this)">카카오</button>
+            </div>
+            <select id="campSiteFilter" onchange="renderCampaign()" style="border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--text);background:var(--card);cursor:pointer">
+              <option value="">전체 사이트</option>
+            </select>
+          </div>
+        </div>
+        <div id="campGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── NAV ──
+// ── 기간 선택 ──
+const PERIOD_LABELS = {
+  today:'오늘', yesterday:'어제', week:'이번 주', lastweek:'지난 주',
+  month:'이번 달', lastmonth:'지난 달', quarter:'이번 분기',
+  year:'올해', lastyear:'작년',
+};
+
+// 월별 CPC 계절성 배율 (1월=0, 12월=11)
+// ── 연도별 시장 성장 기반 베이스 멀티플라이어 (2025 = 1.00 기준) ──
+// 출처: KAA 한국광고주협회 디지털 광고비 연보, IAB Korea 2024 리포트
+// 2022→2023: +8.7%, 2023→2024: +11.8%(KAA 실측), 2024→2025: +13.2%(추정), 2025→2026: +14.1%(AI자동입찰 확산 반영)
+const YEAR_BASE = { 2022:0.73, 2023:0.80, 2024:0.89, 2025:1.00, 2026:1.14, 2027:1.30 };
+
+// ── 연도별 월간 시즌 멀티플라이어 (Jan=0 ~ Dec=11) ──
+// 근거: 설날·추석 날짜(음력 기준 매년 이동), 5월 선물 시즌, 11~12월 연말 쇼핑
+//  2024: 설날 2/9~12, 어린이날 5/5, 추석 9/17~19, 블랙프라이데이 11/29
+//  2025: 설날 1/28~30, 어린이날 5/5, 추석 10/5~7,  블랙프라이데이 11/28
+//  2026: 설날 2/17~19, 어린이날 5/5, 추석 9/25~27, 블랙프라이데이 11/27
+const MONTH_MULT_BY_YEAR = {
+  //        Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec
+  2024: [ 0.80, 0.98, 0.93, 0.97, 1.09, 0.94, 0.86, 0.91, 1.18, 1.07, 1.29, 1.36 ],
+  // 설날 2월 → 1월 최저, 2월 급등 / 추석 9월 → 9월 peak / 5월 선물 / 연말 최고
+  2025: [ 0.97, 0.86, 0.93, 0.97, 1.09, 0.95, 0.87, 0.91, 0.96, 1.24, 1.28, 1.33 ],
+  // 설날 1월 말 → 1월 높음, 2월 낮음 / 추석 10월 → 10월 peak / 연말
+  2026: [ 0.81, 0.99, 0.95, 0.99, 1.11, 0.97, 0.88, 0.93, 1.20, 1.05, 1.32, 1.39 ],
+  // 설날 2월 → 1월 최저, 2월 급등 / 추석 9월 → 9월 peak / 연말 최고(시장 성장 반영)
+};
+// 미등록 연도는 범용 계절 패턴 사용
+function getMonthMult(year, month) {
+  const tbl = MONTH_MULT_BY_YEAR[year];
+  return tbl ? tbl[month] : [0.85, 0.93, 0.94, 0.98, 1.09, 0.95, 0.87, 0.92, 1.06, 1.10, 1.29, 1.36][month];
+}
+function getYearBase(year) {
+  return YEAR_BASE[year] || 1.00;
+}
+
+let curPeriod = 'month';
+let curPeriodMult = 1;
+let curPeriodYear = new Date().getFullYear();
+let curPeriodRange = null; // {start, end} for custom
+
+function getDateRange(key) {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  const fmt = dt => dt.toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+  const mmult = (yr, mo) => getYearBase(yr) * getMonthMult(yr, mo);
+  const qmult = (yr, q) => getYearBase(yr) * [[0.88,0.97,1.08,1.23],[0.90,0.98,1.08,1.25],[0.90,0.97,1.09,1.26]][Math.min(yr-2024,2)]?.[q] || 1;
+  switch(key) {
+    case 'today':     return { label:'오늘 · '+fmt(now), mult: mmult(y,m), year:y };
+    case 'yesterday': { const y2=new Date(y,m,d-1); return { label:'어제 · '+fmt(y2), mult: mmult(y2.getFullYear(),y2.getMonth()), year:y2.getFullYear() }; }
+    case 'week':      { const s=new Date(y,m,d-now.getDay()); return { label:`${fmt(s)} ~ ${fmt(now)}`, mult: mmult(y,m), year:y }; }
+    case 'lastweek':  { const s=new Date(y,m,d-now.getDay()-7),e=new Date(y,m,d-now.getDay()-1); return { label:`${fmt(s)} ~ ${fmt(e)}`, mult: mmult(s.getFullYear(),s.getMonth()), year:s.getFullYear() }; }
+    case 'month':     return { label:`${y}년 ${m+1}월`, mult: mmult(y,m), year:y };
+    case 'lastmonth': { const pm=m===0?11:m-1,py=m===0?y-1:y; return { label:`${py}년 ${pm+1}월`, mult: mmult(py,pm), year:py }; }
+    case 'quarter':   { const q=Math.floor(m/3); return { label:`${y}년 ${q+1}분기`, mult: qmult(y,q), year:y }; }
+    case 'year':      return { label:`${y}년 연간 평균`, mult: getYearBase(y), year:y };
+    case 'lastyear':  return { label:`${y-1}년 연간 평균`, mult: getYearBase(y-1), year:y-1 };
+    default:          return { label:'이번 달', mult: mmult(y,m), year:y };
+  }
+}
+
+function setPeriod(key) {
+  document.getElementById('periodMenu').style.display = 'none';
+  if (key === 'custom') {
+    const now = new Date();
+    document.getElementById('customStart').value = now.toISOString().slice(0,10);
+    document.getElementById('customEnd').value = now.toISOString().slice(0,10);
+    document.getElementById('customDateLayer').style.display = 'flex';
+    return;
+  }
+  curPeriod = key;
+  const range = getDateRange(key);
+  curPeriodMult = range.mult;
+  curPeriodYear = range.year || new Date().getFullYear();
+  document.getElementById('periodBtnLabel').textContent = PERIOD_LABELS[key] || key;
+  const pct = Math.round((range.mult - 1) * 100);
+  const pctTxt = pct === 0 ? '' : ` (기준 대비 ${pct > 0 ? '+' : ''}${pct}%)`;
+  document.getElementById('periodLabel').textContent = range.label + pctTxt;
+  refreshCurrentSection();
+}
+
+function applyCustomDate() {
+  const s = document.getElementById('customStart').value;
+  const e = document.getElementById('customEnd').value;
+  if (!s || !e) return;
+  document.getElementById('customDateLayer').style.display = 'none';
+  curPeriod = 'custom';
+  const sd = new Date(s), ed = new Date(e);
+  const avgMonth = Math.round((sd.getMonth() + ed.getMonth()) / 2);
+  const avgYear = Math.round((sd.getFullYear() + ed.getFullYear()) / 2);
+  curPeriodMult = getYearBase(avgYear) * getMonthMult(avgYear, avgMonth);
+  curPeriodYear = avgYear;
+  const fmt = dt => dt.toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+  const pct = Math.round((curPeriodMult - 1) * 100);
+  const pctTxt = pct === 0 ? '' : ` (기준 대비 ${pct > 0 ? '+' : ''}${pct}%)`;
+  document.getElementById('periodBtnLabel').textContent = '직접 입력';
+  document.getElementById('periodLabel').textContent = `${fmt(sd)} ~ ${fmt(ed)}${pctTxt}`;
+  refreshCurrentSection();
+}
+
+function togglePeriodMenu() {
+  const m = document.getElementById('periodMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#periodBtn') && !e.target.closest('#periodMenu')) {
+    const m = document.getElementById('periodMenu');
+    if (m) m.style.display = 'none';
+  }
+});
+
+let _lastAnalyzedUrl = '';
+let _lastCrawledData = null;
+
+function refreshCurrentSection() {
+  const active = document.querySelector('.nav-item.active');
+  if (!active) return;
+  const sec = active.dataset.sec;
+  if (sec === 'benchmark') renderBenchmark();
+  if (sec === 'sites') renderSiteComparison();
+  if (sec === 'table') renderFullTable();
+  if (sec === 'campaign') renderCampaign();
+  if (sec === 'events') renderEvents();
+  // URL 분석 결과가 표시 중이면 기간 변경 시 자동 재렌더
+  if (sec === 'analyzer' && _lastAnalyzedUrl && document.getElementById('resultWrap').style.display !== 'none') {
+    const parsed = buildResult(_lastAnalyzedUrl, _lastCrawledData);
+    renderResult(parsed, _lastAnalyzedUrl);
+  }
+}
+
+// 초기 기간 설정
+window.addEventListener('DOMContentLoaded', () => {
+  const range = getDateRange('month');
+  curPeriodMult = range.mult;
+  curPeriodYear = range.year || new Date().getFullYear();
+  const pct = Math.round((range.mult - 1) * 100);
+  const pctTxt = pct === 0 ? '' : ` (기준 대비 ${pct > 0 ? '+' : ''}${pct}%)`;
+  document.getElementById('periodLabel').textContent = range.label + pctTxt;
+});
+
+const META={
+  analyzer:['AI로 CPC를 분석하세요','URL 자동 분석'],
+  benchmark:['업종·플랫폼별 기준 데이터','업종별 벤치마크'],
+  sites:['국내 주요 서비스별 CPC 비교','사이트별 CPC 비교'],
+  campaign:['플랫폼별 광고 캠페인 전략 분석','캠페인 전략'],
+  events:['사이트별 주요 마케팅 이벤트 타임라인','이벤트 분석'],
+  table:['전체 업종 비교 데이터','CPC 데이터 표'],
+};
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const name=btn.dataset.sec;
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sec-'+name).classList.add('active');
+    document.getElementById('tSub').textContent=META[name][0];
+    document.getElementById('tTitle').textContent=META[name][1];
+    if(name==='table')renderFullTable();
+    if(name==='benchmark')setTimeout(renderBenchmark,0);
+    if(name==='sites')setTimeout(renderSiteComparison,0);
+    if(name==='campaign')setTimeout(renderCampaign,0);
+    if(name==='events')setTimeout(renderEvents,0);
+  });
+});
+
+// ── BENCHMARK DATA (2025년 기준, 한국 시장) ──
+// 출처: KAA 한국광고주협회, IAB Korea, Google/Meta/Naver/Kakao 공개 벤치마크 자료 기반 추정
+// Google: 검색광고(파워 포지션) + Performance Max 혼합 기준
+// Naver: 파워링크(검색) + 성과형 디스플레이 혼합 기준
+// Meta: 인스타그램+페이스북 퍼포먼스 광고 기준
+// Kakao: 카카오 모먼트 퍼포먼스 광고 기준
+const DATA={
+  google:{name:'Google Ads',avgCpc:1050,minCpc:220,maxCpc:5500,avgCtr:3.4,color:'#4f8eff',
+    industries:[
+      {name:'금융/보험',cpc:5500,ctr:2.8,key:'finance'},    // 대출·보험 검색 3,000~15,000원
+      {name:'법률',    cpc:4800,ctr:2.0,key:'legal'},        // 변호사·법무사 3,000~12,000원
+      {name:'부동산',  cpc:2900,ctr:3.7,key:'realestate'},   // 아파트·분양 1,500~5,500원
+      {name:'의료/헬스케어',cpc:2500,ctr:3.0,key:'healthcare'}, // 성형·치과 포함 2,000~8,000원
+      {name:'IT/SaaS', cpc:2300,ctr:3.4,key:'tech'},         // B2B SaaS 1,800~5,000원
+      {name:'자동차',  cpc:1750,ctr:3.9,key:'auto'},         // 신차·중고차 1,200~4,000원
+      {name:'교육/이러닝',cpc:1400,ctr:4.1,key:'edu'},       // 어학원·온라인강의 700~3,000원
+      {name:'여행/숙박',cpc:1100,ctr:4.4,key:'travel'},      // 호텔·항공 600~2,500원
+      {name:'이커머스', cpc:870,ctr:5.0,key:'ecommerce'},    // 쇼핑 카테고리 400~2,000원
+      {name:'패션/의류',cpc:760,ctr:4.7,key:'fashion'},      // 의류·신발 300~1,500원
+      {name:'뷰티/화장품',cpc:700,ctr:5.1,key:'beauty'},     // 화장품·스킨케어 300~1,400원
+      {name:'식품/F&B',cpc:540,ctr:5.5,key:'food'},          // 식품·배달 200~1,000원
+      {name:'게임/앱', cpc:420,ctr:4.0,key:'game'},          // 모바일 게임 200~800원
+    ]},
+  meta:{name:'Meta Ads',avgCpc:490,minCpc:130,maxCpc:2900,avgCtr:1.3,color:'#10b981',
+    // Meta Korea: CPM 기반, 검색 대비 낮은 클릭 의도 → CPC 구조 상이
+    industries:[
+      {name:'금융/보험',cpc:2900,ctr:0.9,key:'finance'},
+      {name:'부동산',  cpc:2000,ctr:1.0,key:'realestate'},
+      {name:'의료/헬스케어',cpc:1600,ctr:1.1,key:'healthcare'},
+      {name:'IT/SaaS', cpc:1250,ctr:1.2,key:'tech'},
+      {name:'자동차',  cpc:1050,ctr:1.3,key:'auto'},
+      {name:'교육/이러닝',cpc:920,ctr:1.4,key:'edu'},
+      {name:'여행/숙박',cpc:760,ctr:1.6,key:'travel'},
+      {name:'이커머스', cpc:580,ctr:1.8,key:'ecommerce'},
+      {name:'패션/의류',cpc:490,ctr:1.9,key:'fashion'},
+      {name:'뷰티/화장품',cpc:440,ctr:2.2,key:'beauty'},
+      {name:'식품/F&B',cpc:330,ctr:2.1,key:'food'},
+      {name:'게임/앱', cpc:240,ctr:2.0,key:'game'},
+    ]},
+  kakao:{name:'카카오 모먼트',avgCpc:360,minCpc:90,maxCpc:2100,avgCtr:2.0,color:'#f59e0b',
+    // 카카오: 국내 최대 메신저 기반, 리타겟팅·전환 광고 강점
+    industries:[
+      {name:'금융/보험',cpc:2100,ctr:1.3,key:'finance'},
+      {name:'부동산',  cpc:1600,ctr:1.4,key:'realestate'},
+      {name:'의료/헬스케어',cpc:1150,ctr:1.6,key:'healthcare'},
+      {name:'교육/이러닝',cpc:870,ctr:2.0,key:'edu'},
+      {name:'자동차',  cpc:800,ctr:1.8,key:'auto'},
+      {name:'이커머스', cpc:560,ctr:2.4,key:'ecommerce'},
+      {name:'뷰티/화장품',cpc:420,ctr:2.7,key:'beauty'},
+      {name:'패션/의류',cpc:370,ctr:2.5,key:'fashion'},
+      {name:'여행/숙박',cpc:340,ctr:2.2,key:'travel'},
+      {name:'식품/F&B',cpc:260,ctr:2.6,key:'food'},
+      {name:'게임/앱', cpc:210,ctr:2.3,key:'game'},
+    ]},
+  naver:{name:'네이버 성과형',avgCpc:510,minCpc:110,maxCpc:4000,avgCtr:2.9,color:'#ef4444',
+    // 네이버: 파워링크 한국 1위 검색 광고 플랫폼, 고의도 트래픽 특화
+    industries:[
+      {name:'금융/보험',cpc:4000,ctr:2.2,key:'finance'},    // 대출·보험 파워링크 3,000~15,000원
+      {name:'부동산',  cpc:2600,ctr:2.7,key:'realestate'},   // 아파트·청약 1,500~5,000원
+      {name:'의료/헬스케어',cpc:2100,ctr:3.0,key:'healthcare'}, // 성형·치과 포함
+      {name:'교육/이러닝',cpc:1300,ctr:3.3,key:'edu'},
+      {name:'IT/SaaS', cpc:1100,ctr:3.1,key:'tech'},
+      {name:'자동차',  cpc:1000,ctr:3.3,key:'auto'},
+      {name:'이커머스', cpc:720,ctr:4.0,key:'ecommerce'},
+      {name:'뷰티/화장품',cpc:530,ctr:4.4,key:'beauty'},
+      {name:'패션/의류',cpc:460,ctr:4.1,key:'fashion'},
+      {name:'여행/숙박',cpc:440,ctr:3.7,key:'travel'},
+      {name:'식품/F&B',cpc:330,ctr:4.2,key:'food'},
+      {name:'게임/앱', cpc:250,ctr:3.5,key:'game'},
+    ]}
+};
+
+let curPlat='google',benchChart=null;
+const fmt=n=>typeof n==='number'?n.toLocaleString('ko-KR'):(n||'-');
+
+function setPlatform(key,btn){
+  curPlat=key;
+  document.querySelectorAll('.plat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBenchmark();
+}
+
+function renderBenchmark(){
+  const d=DATA[curPlat];
+  const pm=curPeriodMult||1;
+  const adjAvg=Math.round(d.avgCpc*pm),adjMin=Math.round(d.minCpc*pm),adjMax=Math.round(d.maxCpc*pm);
+  const multTxt=pm!==1?` <span style="font-size:11px;color:${pm>1?'var(--bad)':'var(--good)'}"> ${pm>1?'▲':'▼'}${Math.abs(Math.round((pm-1)*100))}%</span>`:'';
+  document.getElementById('chartTitle').textContent=d.name+' — 업종별 평균 CPC (원)';
+  document.getElementById('benchStats').innerHTML=`
+    <div class="stat"><div class="stat-lbl">평균 CPC</div><div class="stat-val">₩${fmt(adjAvg)}${multTxt}</div><div class="stat-sub">전 업종 평균</div></div>
+    <div class="stat"><div class="stat-lbl">최저 CPC</div><div class="stat-val">₩${fmt(adjMin)}</div><div class="stat-sub">${d.industries[d.industries.length-1].name}</div></div>
+    <div class="stat"><div class="stat-lbl">최고 CPC</div><div class="stat-val">₩${fmt(adjMax)}</div><div class="stat-sub">${d.industries[0].name}</div></div>
+    <div class="stat"><div class="stat-lbl">평균 CTR</div><div class="stat-val">${d.avgCtr}%</div><div class="stat-sub">클릭률</div></div>`;
+  const sorted=[...d.industries].sort((a,b)=>a.cpc-b.cpc).map(i=>({...i,cpc:Math.round(i.cpc*pm)}));
+  const colors=sorted.map(v=>{const r=v.cpc/adjMax;return r>.7?'#e86060':r>.4?'#e8964a':'var(--accent)';});
+  if(benchChart)benchChart.destroy();
+  benchChart=new Chart(document.getElementById('benchChart'),{
+    type:'bar',
+    data:{labels:sorted.map(i=>i.name),datasets:[{label:'평균 CPC (원)',data:sorted.map(i=>i.cpc),backgroundColor:colors,borderRadius:6,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' ₩'+fmt(ctx.raw)+'  |  CTR '+sorted[ctx.dataIndex].ctr+'%'}}},
+      scales:{x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>'₩'+fmt(v),font:{size:11}}},y:{ticks:{font:{size:12}},grid:{display:false}}}}
+  });
+}
+
+// ── MY DATA ──
+function loadSample(){
+  document.getElementById('dataInput').value=`캠페인명,노출수,클릭수,비용(원),전환수
+봄_신상품_검색광고,52000,1840,1288000,42
+브랜드_디스플레이,180000,2100,945000,18
+리타겟팅_장바구니,34000,980,588000,61
+신규_키워드_테스트,12000,290,203000,8`;
+  document.getElementById('myIndustry').value='ecommerce';
+  document.getElementById('myPlatform').value='google';
+}
+
+function parseCSV(text){
+  const lines=text.trim().split('\n').filter(l=>l.trim());
+  const res=[];let skip=false;
+  for(const line of lines){
+    const c=line.split(/[,\t]/).map(x=>x.trim());
+    if(!skip){if(isNaN(c[1])||isNaN(c[2])){skip=true;continue;}skip=true;}
+    if(c.length>=4){
+      const imp=parseInt(c[1].replace(/\D/g,''))||0,clk=parseInt(c[2].replace(/\D/g,''))||0,cost=parseInt(c[3].replace(/\D/g,''))||0,conv=parseInt((c[4]||'0').replace(/\D/g,''))||0;
+      if(clk>0&&cost>0)res.push({name:c[0],imp,clk,cost,conv,cpc:Math.round(cost/clk),ctr:clk/imp*100,cpa:conv>0?Math.round(cost/conv):null});
+    }
+  }
+  return res;
+}
+
+function grade(r){
+  if(r<0.8)return{lbl:'우수',cls:'good',color:'#059669'};
+  if(r<1.1)return{lbl:'평균',cls:'warn',color:'#d97706'};
+  return{lbl:'개선필요',cls:'bad',color:'#dc2626'};
+}
+
+function analyzeData(){
+  const text=document.getElementById('dataInput').value;
+  if(!text.trim()){alert('데이터를 입력해주세요.');return;}
+  const rows=parseCSV(text);
+  if(!rows.length){alert('데이터 형식을 확인해주세요.');return;}
+  const ik=document.getElementById('myIndustry').value,pk=document.getElementById('myPlatform').value,pd=DATA[pk];
+  let bm=pd.avgCpc,bmLbl='전 업종 평균';
+  if(ik){const ind=pd.industries.find(i=>i.key===ik);if(ind){bm=ind.cpc;bmLbl=ind.name+' 업종 평균';}}
+  const totCost=rows.reduce((s,r)=>s+r.cost,0),totClk=rows.reduce((s,r)=>s+r.clk,0),totImp=rows.reduce((s,r)=>s+r.imp,0),totConv=rows.reduce((s,r)=>s+r.conv,0);
+  const avgCpc=Math.round(totCost/totClk),avgCtr=(totClk/totImp*100).toFixed(2),totCpa=totConv>0?Math.round(totCost/totConv):null,ratio=avgCpc/bm,g=grade(ratio);
+  let html=`<div class="card"><div class="card-title">분석 결과 — ${pd.name}</div><div class="g4 mb20">
+    <div class="stat"><div class="stat-icon" style="background:#e0f7f5">💰</div><div><div class="stat-lbl">총 광고비</div><div class="stat-val" style="font-size:16px">₩${fmt(totCost)}</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#dbeafe">👆</div><div><div class="stat-lbl">평균 CPC</div><div class="stat-val" style="font-size:16px">₩${fmt(avgCpc)}</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#fef3c7">📊</div><div><div class="stat-lbl">평균 CTR</div><div class="stat-val" style="font-size:16px">${avgCtr}%</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#d1fae5">✅</div><div><div class="stat-lbl">${totCpa?'CPA':'총 클릭'}</div><div class="stat-val" style="font-size:16px">${totCpa?'₩'+fmt(totCpa):fmt(totClk)}</div></div></div>
+  </div>
+  <div style="background:#f8fafc;border-radius:12px;padding:18px;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div><div style="font-size:14px;font-weight:600">벤치마크 비교</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${bmLbl}: ₩${fmt(bm)}</div></div>
+      <span class="badge b-${g.cls}">${g.lbl}</span>
+    </div>
+    <div style="display:flex;gap:20px;font-size:13px;margin-bottom:10px;">
+      <span>내 CPC: <strong>₩${fmt(avgCpc)}</strong></span><span>벤치마크: <strong>₩${fmt(bm)}</strong></span>
+      <span style="color:${g.color};font-weight:600">${ratio<1?'▼ ':'▲ '}${Math.abs(Math.round((1-ratio)*100))}%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(100,ratio*50)}%;background:${g.color}"></div></div>
+  </div>
+  <div class="card-title">캠페인별 상세</div>`;
+  for(const r of rows){const rg=grade(r.cpc/bm);html+=`<div class="res-row"><div><div class="res-lbl">${r.name}</div><div class="res-sub">노출 ${fmt(r.imp)} · 클릭 ${fmt(r.clk)} · CTR ${r.ctr.toFixed(2)}%${r.cpa?' · CPA ₩'+fmt(r.cpa):''}</div></div><div style="text-align:right;flex-shrink:0;padding-left:12px"><div style="font-weight:700;font-size:15px;margin-bottom:4px">₩${fmt(r.cpc)}</div><span class="badge b-${rg.cls}">${rg.lbl}</span></div></div>`;}
+  html+='</div>';
+  document.getElementById('analysisResult').innerHTML=html;
+}
+
+// ── FULL TABLE ──
+function renderFullTable(){
+  const pk=['google','meta','kakao','naver'],ik=['finance','realestate','healthcare','edu','tech','auto','travel','ecommerce','fashion','beauty','food','game'];
+  const nm={finance:'금융/보험',realestate:'부동산',healthcare:'의료/헬스케어',edu:'교육/이러닝',tech:'IT/SaaS',auto:'자동차',travel:'여행/숙박',ecommerce:'이커머스',fashion:'패션/의류',beauty:'뷰티/화장품',food:'식품/F&B',game:'게임/앱'};
+  let h='<thead><tr><th>업종</th><th>Google Ads</th><th>Meta Ads</th><th>카카오 모먼트</th><th>네이버 성과형</th></tr></thead><tbody>';
+  for(const k of ik){
+    h+=`<tr><td style="font-weight:600">${nm[k]}</td>`;
+    for(const p of pk){const ind=DATA[p].industries.find(i=>i.key===k);if(ind){const w=Math.round(ind.cpc/DATA[p].industries[0].cpc*70);h+=`<td>₩${fmt(ind.cpc)}<span class="mini-bar" style="width:${w}px;background:${DATA[p].color}"></span></td>`;}else h+='<td style="color:#ccc">—</td>';}
+    h+='</tr>';
+  }
+  document.getElementById('fullTable').innerHTML=h+'</tbody>';
+}
+
+// ── SITE URL ANALYZER (사이트 비교 탭) ──
+function analyzeSiteUrl(){
+  const url=document.getElementById('siteUrlInput').value.trim();
+  if(!url){alert('URL을 입력해주세요.');return;}
+  const detected=detectIndustry(url);
+  const ind=INDUSTRY_MAP.find(i=>i.key===detected.key)||INDUSTRY_MAP[0];
+  const gd=DATA.google.industries.find(i=>i.key===ind.key)||{cpc:800,ctr:3.5};
+  const nd=DATA.naver.industries.find(i=>i.key===ind.key)||{cpc:500,ctr:3.0};
+  const md=DATA.meta.industries.find(i=>i.key===ind.key)||{cpc:400,ctr:1.2};
+  const kd=DATA.kakao.industries.find(i=>i.key===ind.key)||{cpc:300,ctr:1.8};
+  const siteName=detected.name||detected.domain;
+  const maxCpc=Math.max(gd.cpc,nd.cpc,md.cpc,kd.cpc);
+  document.getElementById('siteUrlResult').innerHTML=`
+    <div style="background:#f8fafc;border-radius:12px;padding:16px 18px;border:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);border:1px solid #ddd8f5">${siteName.slice(0,2)}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">${siteName}</div>
+          <div style="font-size:12px;color:var(--muted)">${detected.domain} · ${ind.name} · ${ind.comp} 경쟁도</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        ${[
+          {label:'🔵 Google',cpc:gd.cpc,ctr:gd.ctr,color:'#4f8eff',bg:'#e8f0ff',min:Math.round(gd.cpc*.5),max:Math.round(gd.cpc*1.8)},
+          {label:'🔴 네이버',cpc:nd.cpc,ctr:nd.ctr,color:'#ef4444',bg:'#fee2e2',min:Math.round(nd.cpc*.5),max:Math.round(nd.cpc*1.8)},
+          {label:'🟢 Meta',  cpc:md.cpc,ctr:md.ctr,color:'#10b981',bg:'#d1fae5',min:Math.round(md.cpc*.5),max:Math.round(md.cpc*1.8)},
+          {label:'🟡 카카오',cpc:kd.cpc,ctr:kd.ctr,color:'#f59e0b',bg:'#fef3c7',min:Math.round(kd.cpc*.5),max:Math.round(kd.cpc*1.8)},
+        ].map(p=>`<div style="background:${p.bg};border-radius:10px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:${p.color};margin-bottom:6px">${p.label}</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:2px">₩${fmt(p.cpc)}</div>
+          <div style="font-size:10px;color:var(--muted)">₩${fmt(p.min)}~₩${fmt(p.max)}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:1px">CTR ${p.ctr}%</div>
+          <div class="bar-bg" style="margin-top:8px"><div class="bar-fill" style="width:${Math.round(p.cpc/maxCpc*100)}%;background:${p.color}"></div></div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── SITE COMPARISON ──
+function renderSiteComparison(){
+  const emojiMap={};
+  const sites=[
+    {key:'coupang',    name:'쿠팡',       domain:'coupang.com',    ind:'ecommerce'},
+    {key:'baemin',     name:'배달의민족', domain:'baemin.com',     ind:'food'},
+    {key:'musinsa',    name:'무신사',     domain:'musinsa.com',    ind:'fashion'},
+    {key:'toss',       name:'토스',       domain:'toss.im',        ind:'finance'},
+    {key:'yanolja',    name:'야놀자',     domain:'yanolja.com',    ind:'travel'},
+    {key:'kakaobank',  name:'카카오뱅크', domain:'kakaobank.com',  ind:'finance'},
+    {key:'zigzag',     name:'지그재그',   domain:'zigzag.kr',      ind:'fashion'},
+    {key:'ably',       name:'에이블리',   domain:'a-bly.com',      ind:'fashion'},
+    {key:'kurly',      name:'마켓컬리',   domain:'kurly.com',      ind:'food'},
+    {key:'gangnamunni',name:'강남언니',   domain:'gangnamunni.com',ind:'healthcare'},
+    {key:'inflearn',   name:'인프런',     domain:'inflearn.com',   ind:'edu'},
+    {key:'classu',     name:'클래스유',   domain:'classu.co.kr',   ind:'edu'},
+    {key:'coloso',     name:'콜로소',     domain:'coloso.com',     ind:'edu'},
+  ];
+
+  // stat cards
+  const allG=sites.map(s=>(DATA.google.industries.find(i=>i.key===s.ind)||{cpc:0}).cpc);
+  const allN=sites.map(s=>(DATA.naver.industries.find(i=>i.key===s.ind)||{cpc:0}).cpc);
+  const avgG=Math.round(allG.reduce((a,b)=>a+b,0)/allG.length);
+  const avgN=Math.round(allN.reduce((a,b)=>a+b,0)/allN.length);
+  const maxG=Math.max(...allG),maxN=Math.max(...allN);
+  document.getElementById('siteStatCards').innerHTML=`
+    <div class="stat"><div class="stat-icon" style="background:#e8f0ff">🔵</div><div><div class="stat-lbl">Google 평균 CPC</div><div class="stat-val">₩${fmt(avgG)}</div><div class="stat-sub">등록 사이트 평균</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#fee2e2">🔴</div><div><div class="stat-lbl">네이버 평균 CPC</div><div class="stat-val">₩${fmt(avgN)}</div><div class="stat-sub">등록 사이트 평균</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#fef3c7">📈</div><div><div class="stat-lbl">Google 최고 CPC</div><div class="stat-val">₩${fmt(maxG)}</div><div class="stat-sub">금융 업종</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#d1fae5">🏢</div><div><div class="stat-lbl">등록 사이트 수</div><div class="stat-val">${sites.length}개</div><div class="stat-sub">국내 주요 서비스</div></div></div>`;
+
+  // site cards
+  let html='';
+  for(const s of sites){
+    const gd=DATA.google.industries.find(i=>i.key===s.ind)||{cpc:800,ctr:3.5};
+    const nd=DATA.naver.industries.find(i=>i.key===s.ind)||{cpc:500,ctr:3.0};
+    const md=DATA.meta.industries.find(i=>i.key===s.ind)||{cpc:400,ctr:1.2};
+    const kd=DATA.kakao.industries.find(i=>i.key===s.ind)||{cpc:300,ctr:1.8};
+    const maxCpc=Math.max(gd.cpc,nd.cpc,md.cpc,kd.cpc);
+    const gW=Math.round(gd.cpc/maxCpc*100),nW=Math.round(nd.cpc/maxCpc*100);
+    const indName=(DATA.google.industries.find(i=>i.key===s.ind)||{name:s.ind}).name;
+    html+=`<div class="plat-card" style="cursor:pointer" onclick="setUrl('https://${s.domain}');document.querySelector('[data-sec=analyzer]').click()">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);border:1px solid #ddd8f5;flex-shrink:0">${s.name.slice(0,2)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;margin-bottom:1px">${s.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${s.domain} · ${indName}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:#4f8eff;font-weight:600">🔵 Google</span>
+            <span style="font-weight:700">₩${fmt(gd.cpc)}</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${gW}%;background:#4f8eff"></div></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">₩${fmt(Math.round(gd.cpc*0.5))} ~ ₩${fmt(Math.round(gd.cpc*1.8))} · CTR ${gd.ctr}%</div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:#ef4444;font-weight:600">🔴 네이버</span>
+            <span style="font-weight:700">₩${fmt(nd.cpc)}</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" style="width:${nW}%;background:#ef4444"></div></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">₩${fmt(Math.round(nd.cpc*0.5))} ~ ₩${fmt(Math.round(nd.cpc*1.8))} · CTR ${nd.ctr}%</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:2px">
+          <span style="font-size:11px;background:#e8f0ff;color:#3b6fd4;border-radius:6px;padding:3px 8px;font-weight:600">Meta ₩${fmt(md.cpc)}</span>
+          <span style="font-size:11px;background:#fef9c3;color:#b45309;border-radius:6px;padding:3px 8px;font-weight:600">카카오 ₩${fmt(kd.cpc)}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('siteCards').innerHTML=html;
+}
+
+// ── URL ANALYZER ──
+function setUrl(url){document.getElementById('urlInput').value=url;document.getElementById('urlInput').focus();}
+document.getElementById('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter')runAnalysis();});
+
+// ── 도메인 기반 업종 감지 엔진 ──
+const INDUSTRY_MAP = [
+  { key:'finance',  name:'금융/보험',    emoji:'💳', patterns:['bank','finance','insurance','loan','invest','capital','credit','fund','toss','kakaobank','kbank','hana','woori','신한','하나','우리','삼성생명','흥국','동양','메리츠','키움','미래에셋'],
+    model:'B2C', comp:'매우높음', tags:['금융','핀테크','보험'],
+    target:'30~50대 금융 소비자', budget:{min:300,rec:800},
+    kws:[['대출 비교',8200,'높음'],['적금 금리',5400,'높음'],['보험 가입',7100,'높음'],['주식 계좌 개설',4300,'보통'],['카드 발급',3800,'보통'],['비대면 통장',2900,'보통']],
+    ins:[{type:'opportunity',title:'브랜드 검색 집중',body:'금융은 신뢰가 핵심. 브랜드명+상품명 키워드 조합으로 전환율을 높이세요.'},{type:'warning',title:'CPC 최고 업종',body:'금융/보험은 국내 최고 CPC 업종. 소재 품질 점수 관리가 비용 절감의 핵심입니다.'},{type:'tip',title:'네이버 파워링크 우선',body:'금융 상품 검색은 네이버 비중이 높습니다. 네이버 성과형 광고를 먼저 집행하세요.'}] },
+  { key:'ecommerce', name:'이커머스',     emoji:'🛍️', patterns:['shop','store','mall','market','coupang','gmarket','11st','auction','wemake','29cm','musinsa','ably','zigzag','카카오쇼핑','쿠팡','지마켓'],
+    model:'B2C', comp:'높음', tags:['쇼핑','온라인몰','이커머스'],
+    target:'20~40대 온라인 쇼핑객', budget:{min:100,rec:300},
+    kws:[['온라인 쇼핑',1200,'높음'],['무료배송',800,'높음'],['특가 할인',950,'높음'],['브랜드 직구',1100,'보통'],['당일배송',780,'보통'],['리뷰 상품',560,'낮음']],
+    ins:[{type:'opportunity',title:'쇼핑 캠페인 활용',body:'Google 쇼핑광고와 네이버 쇼핑검색을 병행하면 ROAS를 극대화할 수 있습니다.'},{type:'warning',title:'시즌별 CPC 변동',body:'블프/설/추석 등 시즌에 CPC가 2~3배 급등합니다. 예산 여유분을 확보하세요.'},{type:'tip',title:'리타겟팅 필수',body:'장바구니 이탈 고객 리타겟팅 광고는 일반 광고 대비 전환율이 3~5배 높습니다.'}] },
+  { key:'beauty',   name:'뷰티/화장품',  emoji:'💄', patterns:['beauty','cosmetic','skincare','makeup','올리브','amore','laneige','innisfree','missha','romand','클리오','에뛰드','설화수','헤라'],
+    model:'B2C', comp:'높음', tags:['뷰티','화장품','스킨케어'],
+    target:'20~35대 여성', budget:{min:80,rec:200},
+    kws:[['스킨케어 추천',980,'높음'],['쿠션 팩트',760,'높음'],['수분크림',820,'높음'],['선크림 추천',1100,'보통'],['파운데이션',850,'보통'],['에센스 세럼',690,'낮음']],
+    ins:[{type:'opportunity',title:'인스타그램 광고 효율 최고',body:'뷰티는 Meta(인스타) 광고의 비주얼 효과가 크습니다. 릴스 광고를 적극 활용하세요.'},{type:'warning',title:'계절 트렌드 민감',body:'봄/여름 선케어, 겨울 수분 제품 등 시즌에 따라 키워드와 소재를 바꿔야 합니다.'},{type:'tip',title:'인플루언서 리뷰 연계',body:'광고와 인플루언서 콘텐츠를 동시에 집행하면 신뢰도와 클릭률이 올라갑니다.'}] },
+  { key:'fashion',  name:'패션/의류',    emoji:'👗', patterns:['fashion','style','cloth','wear','outfit','musinsa','ootd','29cm','ssg','한섬','무신사','지그재그','에이블리'],
+    model:'B2C', comp:'높음', tags:['패션','의류','스타일'],
+    target:'18~35세 패션 관심층', budget:{min:70,rec:180},
+    kws:[['남성 코디',780,'높음'],['여성 원피스',850,'높음'],['봄 신상 패딩',920,'보통'],['캐주얼 셔츠',640,'보통'],['스트릿 패션',710,'보통'],['데일리 룩',550,'낮음']],
+    ins:[{type:'opportunity',title:'룩북 광고 소재',body:'착장 이미지 위주의 카탈로그 광고가 클릭률이 높습니다. 계절별 룩북을 준비하세요.'},{type:'warning',title:'트렌드 민감도',body:'패션은 트렌드 사이클이 빠릅니다. 키워드와 소재를 월 단위로 업데이트하세요.'},{type:'tip',title:'카카오 모먼트 강세',body:'패션은 카카오 채널과 모먼트 광고에서 20~30대 반응률이 높습니다.'}] },
+  { key:'food',     name:'식품/F&B',     emoji:'🍱', patterns:['food','eat','cafe','restaurant','delivery','baemin','yogiyo','coupangeats','배달','음식','맛집','마켓컬리','오아시스','freshcode'],
+    model:'B2C', comp:'보통', tags:['식품','배달','F&B'],
+    target:'20~40대 식품 소비자', budget:{min:50,rec:150},
+    kws:[['배달 음식',680,'높음'],['새벽배송',590,'높음'],['밀키트 추천',720,'높음'],['건강식품',650,'보통'],['카페 프랜차이즈',490,'보통'],['구독 식단',380,'낮음']],
+    ins:[{type:'opportunity',title:'배달앱 연동 광고',body:'배민/요기요 내 광고와 SNS 광고를 연계하면 신규 고객 획득 비용을 낮출 수 있습니다.'},{type:'warning',title:'지역 타겟팅 필수',body:'식품/배달은 서비스 지역 외 노출이 낭비입니다. 반드시 지역 타겟팅을 설정하세요.'},{type:'tip',title:'점심/저녁 시간대 집중',body:'11~13시, 17~20시 시간대 입찰가를 높이면 전환율이 크게 올라갑니다.'}] },
+  { key:'travel',   name:'여행/숙박',    emoji:'✈️', patterns:['travel','tour','hotel','resort','trip','booking','airbnb','yanolja','goodchoice','여행','호텔','숙박','야놀자','여기어때','트립어드바이저'],
+    model:'B2C', comp:'높음', tags:['여행','숙박','투어'],
+    target:'20~50대 여행객', budget:{min:120,rec:350},
+    kws:[['제주 호텔 추천',1400,'높음'],['해외여행 패키지',1800,'높음'],['국내 여행지',980,'높음'],['펜션 예약',870,'보통'],['항공권 특가',1600,'보통'],['가족 여행 코스',760,'낮음']],
+    ins:[{type:'opportunity',title:'시즌 전 선점 광고',body:'여름/겨울 성수기 6~8주 전부터 광고를 집행해 경쟁 전 저렴한 CPC로 예약을 받으세요.'},{type:'warning',title:'성수기 CPC 폭등',body:'7~8월, 12~1월 CPC가 평소의 2~3배로 오릅니다. 비수기 예산을 성수기로 이동하세요.'},{type:'tip',title:'후기 콘텐츠 연계',body:'여행 후기 콘텐츠와 연계한 네이티브 광고가 일반 배너 대비 클릭률이 높습니다.'}] },
+  { key:'healthcare',name:'의료/헬스케어',emoji:'🏥', patterns:['health','hospital','clinic','medical','pharma','doctor','dental','gangnam','강남','성형','치과','한의원','의원','병원','헬스장','gym','pilates','pilat'],
+    model:'B2C', comp:'매우높음', tags:['의료','병원','헬스케어'],
+    target:'30~50대 건강 관심층', budget:{min:200,rec:600},
+    kws:[['강남 성형외과',4200,'높음'],['치아 교정 비용',3800,'높음'],['라식 수술',5100,'높음'],['탈모 치료',3400,'보통'],['다이어트 한의원',2900,'보통'],['도수치료',2100,'낮음']],
+    ins:[{type:'opportunity',title:'지역+시술명 키워드',body:'병원명보다 지역명+시술명 조합 키워드가 전환 의도가 높습니다.'},{type:'warning',title:'의료광고 심의 필수',body:'의료광고는 심의를 받지 않으면 집행이 거부됩니다. 사전에 심의 절차를 진행하세요.'},{type:'tip',title:'네이버 플레이스 연동',body:'네이버 지도/플레이스 광고를 병행하면 병원 검색 전환율이 크게 올라갑니다.'}] },
+  { key:'edu',      name:'교육/이러닝',  emoji:'📚', patterns:['edu','learn','class','school','academy','tutor','study','classu','coloso','inflearn','클래스','강의','교육','학원','인강','스터디'],
+    model:'B2C', comp:'높음', tags:['교육','이러닝','강의'],
+    target:'20~40대 자기계발 관심층', budget:{min:100,rec:280},
+    kws:[['온라인 강의 추천',1500,'높음'],['자격증 취득',1800,'높음'],['코딩 부트캠프',2200,'높음'],['영어 회화',1200,'보통'],['디자인 강의',980,'보통'],['재테크 교육',1600,'낮음']],
+    ins:[{type:'opportunity',title:'무료 체험 전환 전략',body:'무료 클래스→유료 전환 퍼널을 광고에 연결하면 CPA를 크게 낮출 수 있습니다.'},{type:'warning',title:'수강 후기 활용',body:'교육은 수강 후기가 전환에 결정적입니다. 광고 소재에 수강생 후기를 반드시 포함하세요.'},{type:'tip',title:'유튜브 광고 효과적',body:'강사 얼굴이 나오는 유튜브 인스트림 광고가 교육 분야에서 특히 전환율이 높습니다.'}] },
+  { key:'tech',     name:'IT/SaaS',     emoji:'💻', patterns:['tech','software','saas','app','solution','platform','cloud','notion','slack','figma','jira','github','dev','api','토스','카카오','naver','kakao','line'],
+    model:'B2B', comp:'높음', tags:['SaaS','테크','플랫폼'],
+    target:'IT 담당자·스타트업', budget:{min:150,rec:400},
+    kws:[['업무 자동화 툴',2800,'높음'],['SaaS 솔루션',3200,'높음'],['HR 관리 시스템',2600,'보통'],['마케팅 자동화',3100,'보통'],['클라우드 서비스',2400,'보통'],['ERP 시스템',3800,'낮음']],
+    ins:[{type:'opportunity',title:'무료 체험판 광고',body:'B2B SaaS는 무료 트라이얼 CTA가 가장 효과적입니다. 랜딩페이지를 트라이얼 전용으로 만드세요.'},{type:'warning',title:'긴 의사결정 사이클',body:'B2B는 전환까지 수개월 걸립니다. 리타겟팅과 이메일 마케팅을 광고와 연계하세요.'},{type:'tip',title:'LinkedIn 광고 고려',body:'IT/SaaS B2B는 국내에서도 LinkedIn 광고의 타겟 정밀도가 높아 효율적입니다.'}] },
+  { key:'realestate',name:'부동산',      emoji:'🏢', patterns:['realestate','property','estate','apart','아파트','부동산','공인중개','직방','다방','호갱','청약','분양'],
+    model:'B2C', comp:'매우높음', tags:['부동산','아파트','분양'],
+    target:'30~50대 주거/투자 관심층', budget:{min:250,rec:700},
+    kws:[['아파트 분양 정보',3800,'높음'],['전세 매물',2900,'높음'],['신축 아파트',4100,'높음'],['부동산 투자',3500,'보통'],['청약 당첨',2800,'보통'],['역세권 오피스텔',2400,'낮음']],
+    ins:[{type:'opportunity',title:'단지별 타겟 광고',body:'관심 지역·단지명 키워드로 좁게 타겟팅하면 전환 의도가 높은 고객을 잡을 수 있습니다.'},{type:'warning',title:'규제 변화 모니터링',body:'부동산 정책 변화 시 광고 메시지를 즉시 업데이트해야 합니다.'},{type:'tip',title:'카카오 지도 광고',body:'카카오맵 내 부동산 광고는 지역 기반 잠재 고객에게 높은 노출 효율을 보입니다.'}] },
+  { key:'auto',     name:'자동차',       emoji:'🚗', patterns:['car','auto','vehicle','motor','hyundai','kia','genesis','bmw','benz','현대','기아','제네시스','볼보','아우디','폭스바겐'],
+    model:'B2C', comp:'높음', tags:['자동차','신차','중고차'],
+    target:'30~50대 자동차 구매 예정자', budget:{min:180,rec:500},
+    kws:[['신차 가격 비교',2200,'높음'],['중고차 매입',1900,'높음'],['전기차 보조금',2800,'높음'],['SUV 추천',1800,'보통'],['자동차 보험',4500,'보통'],['리스 렌트카',2100,'낮음']],
+    ins:[{type:'opportunity',title:'시승 신청 CTA',body:'시승 신청 유도 광고는 구매 의향 고객을 직접 연결합니다. 온라인 시승 예약 랜딩을 만드세요.'},{type:'warning',title:'경쟁사 비교 광고 주의',body:'자동차는 경쟁사 비교 광고에 민감합니다. 자사 브랜드 강점 중심으로 소재를 구성하세요.'},{type:'tip',title:'유튜브 시승 리뷰 연계',body:'유튜브 차량 리뷰 채널 타겟팅 광고는 구매 고려 단계 고객에게 매우 효과적입니다.'}] },
+  { key:'game',     name:'게임/앱',      emoji:'🎮', patterns:['game','gaming','play','nexon','ncsoft','kakao게임','넥슨','엔씨','크래프톤','넷마블','스마일게이트','app','앱'],
+    model:'B2C', comp:'보통', tags:['게임','모바일앱','엔터테인먼트'],
+    target:'15~35세 게이머', budget:{min:50,rec:150},
+    kws:[['모바일 RPG',580,'높음'],['무료 게임 추천',420,'높음'],['신작 게임',650,'높음'],['PC 온라인게임',480,'보통'],['게임 사전예약',390,'보통'],['캐주얼 게임',310,'낮음']],
+    ins:[{type:'opportunity',title:'메타 광고 강세',body:'게임은 Facebook/Instagram 광고에서 영상 소재 CTR이 특히 높습니다.'},{type:'warning',title:'이탈률 관리',body:'게임 광고는 초기 유입 후 이탈률이 높습니다. 첫 접속 경험을 최적화하세요.'},{type:'tip',title:'인플루언서 스트리머 활용',body:'유튜브/트위치 게임 스트리머와의 협업이 광고 대비 높은 설치 전환율을 보입니다.'}] },
+];
+
+// cpc: 각 사이트 특성 기반 개별 추정치 (업종 평균이 아닌 사이트별)
+// 근거: 플랫폼 규모·카테고리 경쟁도·평균 객단가·브랜드 인지도 종합
+const KNOWN_SITES = {
+  'coupang': { key:'ecommerce', name:'쿠팡',
+    desc:'국내 최대 이커머스. 전 카테고리 취급, 브랜드 간 입찰 경쟁이 가장 치열한 플랫폼.',
+    cpc:{ google:{min:520,avg:1200,max:3200}, naver:{min:420,avg:940,max:2400}, meta:{min:260,avg:600,max:1550}, kakao:{min:190,avg:460,max:1200} },
+    // Google: 가전·건강식품 카테고리 3,000원+, 일반상품 500~1,200원, 평균 1,200원
+    why:'취급 카테고리가 전방위적이고 경쟁 셀러 수가 최다. 특히 가전·건강기능식품·패션 카테고리 CPC 높음.',
+    adStrategy:{
+      channels:['TV·OTT 광고','네이버 쇼핑 검색','Google 쇼핑','Meta 피드','유튜브 프리롤','카카오 알림톡'],
+      acquisition:'로켓배송 무료체험 + 로켓와우 구독 전환 유도. 첫 구매 쿠폰으로 신규 유입 → 빠른 배송 경험으로 락인(Lock-in).',
+      creative:'배송 속도 강조 영상, 최저가 배지, 시즌 특가 배너',
+      targeting:'전 연령대. 특히 30~40대 주부·직장인. 지역 타겟팅 없이 전국 단위.',
+      retention:'로켓와우 멤버십(월 구독료) → 무료배송 혜택으로 재구매율 극대화',
+    }},
+
+  'musinsa': { key:'fashion', name:'무신사',
+    desc:'국내 최대 패션 버티컬 플랫폼. 브랜드 입점 경쟁 심화.',
+    cpc:{ google:{min:400,avg:820,max:1900}, naver:{min:300,avg:640,max:1600}, meta:{min:220,avg:480,max:1200}, kakao:{min:160,avg:350,max:900} },
+    why:'패션 버티컬 중 점유율 1위. 브랜드들이 무신사 내 트래픽을 외부 광고로 유인하려는 경쟁 있음.',
+    adStrategy:{
+      channels:['인스타그램 릴스','유튜브 패션 채널','네이버 검색광고','무신사 내부 광고(브랜드관)','인플루언서 협찬'],
+      acquisition:'패션 인플루언서·스타일리스트 협업 콘텐츠로 유입 → 앱 설치 유도 → 무신사 스탠다드 자체 브랜드로 락인.',
+      creative:'룩북 이미지, 스트릿 패션 릴스, 한정판 드롭 예고 콘텐츠',
+      targeting:'18~34세 남성(무신사), 여성(무신사우먼). 패션 관심사 타겟.',
+      retention:'무신사 포인트·등급제, 한정판 발매 알림, 라이브커머스',
+    }},
+
+  'toss': { key:'finance', name:'토스',
+    desc:'핀테크 슈퍼앱. 대출·투자·보험 등 금융 전 영역 경쟁.',
+    cpc:{ google:{min:2200,avg:4500,max:9500}, naver:{min:1700,avg:3400,max:8000}, meta:{min:900,avg:1900,max:4200}, kakao:{min:700,avg:1600,max:3500} },
+    // 대출·보험 파워링크: 5,000~30,000원/click. 퍼포먼스 믹스 기준 평균 4,500원(Google)
+    why:'금융업은 국내 최고 CPC 업종. 토스는 모든 금융 카테고리를 커버해 경쟁사가 은행·보험·증권 등 전방위.',
+    adStrategy:{
+      channels:['TV 광고(대규모)','유튜브 Pre-roll','네이버 파워링크','Google 검색','인스타그램','카카오 디스플레이'],
+      acquisition:'간편송금 무료 체험 → 앱 설치 → 금융 상품(투자·대출·보험) 교차판매. 친구 초대 리워드로 바이럴 확산.',
+      creative:'송금 쉬움 강조, 금리 비교 소재, 직관적 UI 데모 영상, 셀럽 모델',
+      targeting:'20~40대 전체. 대출은 30~50대, 투자는 20~35대 별도 타겟.',
+      retention:'토스 포인트·토스증권 혜택, 매일 출석 체크 리워드, 금융 목표 관리 기능',
+    }},
+
+  'kakaobank': { key:'finance', name:'카카오뱅크',
+    desc:'인터넷전문은행. 대출·예금·카드 키워드 경쟁 극심.',
+    cpc:{ google:{min:1900,avg:4000,max:8500}, naver:{min:1400,avg:3100,max:7200}, meta:{min:800,avg:1700,max:3800}, kakao:{min:600,avg:1350,max:3100} },
+    // 대출·예금 파워링크: 4,000~20,000원, 카카오 자체 광고 플랫폼 우위로 카카오 CPC 상대적 낮음
+    why:'인터넷은행 중 1위. 대출·예금 키워드는 국내에서 가장 비싼 CPC 군에 속함.',
+    adStrategy:{
+      channels:['카카오톡 채널 메시지','TV·유튜브','네이버 검색광고','카카오 모먼트'],
+      acquisition:'카카오톡 연동 → 카톡 계정으로 1분 개설. 기존 카카오 생태계(5000만 이용자) 활용이 핵심.',
+      creative:'계좌 개설 30초 영상, 금리 비교 배너, 26주적금 챌린지 SNS 콘텐츠',
+      targeting:'카카오 사용자 전체. 대출은 30~50대, 예금은 20~40대.',
+      retention:'카카오페이 연동, 26주 적금 챌린지 등 소셜 기능으로 이탈 방지',
+    }},
+
+  'yanolja': { key:'travel', name:'야놀자',
+    desc:'숙박·레저 슈퍼앱. 시즌 피크 시 CPC 급등.',
+    cpc:{ google:{min:500,avg:1050,max:2600}, naver:{min:380,avg:800,max:2000}, meta:{min:250,avg:520,max:1300}, kakao:{min:190,avg:400,max:1000} },
+    why:'여행 성수기(여름·연휴) CPC 2배 이상 급등. 숙박·펜션·호텔 키워드 경쟁 높음.',
+    adStrategy:{
+      channels:['TV·OTT 광고','유튜브','네이버 검색(숙박 키워드)','인스타그램','카카오 모먼트','앱 푸시알림'],
+      acquisition:'첫 예약 할인쿠폰 → 앱 설치 유도. 여행 시즌 전 대규모 TV 광고로 브랜드 인지도 확보.',
+      creative:'여행 감성 영상, 지역별 숙소 추천, 특가 타이머 배너, 연예인 모델',
+      targeting:'20~40대. 연인·가족 타겟. 시즌(여름방학·추석·설)에 예산 집중.',
+      retention:'야놀자 클럽 등급제, 실시간 특가 알림, 취소 무료 정책으로 재예약 유도',
+    }},
+
+  'baemin': { key:'food', name:'배달의민족',
+    desc:'국내 1위 배달앱. 지역 기반이라 단가 상대적으로 낮음.',
+    cpc:{ google:{min:200,avg:480,max:1100}, naver:{min:150,avg:360,max:900}, meta:{min:120,avg:280,max:700}, kakao:{min:90,avg:210,max:550} },
+    why:'배달은 지역 타겟팅 중심. 전국 단위 경쟁이 적어 CPC 상대적으로 낮지만 식품·프랜차이즈 키워드는 경쟁 있음.',
+    adStrategy:{
+      channels:['TV 광고','유튜브','앱 푸시알림','카카오 알림톡','인스타그램','지하철 옥외광고'],
+      acquisition:'배민1 빠른배달 + 첫주문 쿠폰으로 신규 유입. B마트 새벽배달로 쿠팡·컬리와 경쟁.',
+      creative:'B급 유머 감성 광고(배민 특유 톤앤매너), 치킨·피자 시즐 영상, 배민1 속도 강조',
+      targeting:'전 연령대. 특히 1인 가구 20~30대, 야간·주말 피크 타임 타겟팅.',
+      retention:'배민클럽 월정액, 단골 가게 기능, 리뷰 포인트 제도',
+    }},
+
+  'kurly': { key:'food', name:'마켓컬리',
+    desc:'프리미엄 신선식품 새벽배송. 높은 객단가 = 높은 CPC.',
+    cpc:{ google:{min:300,avg:680,max:1600}, naver:{min:230,avg:520,max:1300}, meta:{min:170,avg:390,max:980}, kakao:{min:130,avg:300,max:750} },
+    why:'프리미엄 식품 특성상 객단가 높고 경쟁사(SSG, 오아시스 등) 동일 키워드 입찰.',
+    adStrategy:{
+      channels:['TV 광고','인스타그램(식품 비주얼)','유튜브','네이버 쇼핑검색','이메일 뉴스레터','앱 푸시'],
+      acquisition:'새벽배송 체험 → 신선도 감동 → 재구매. 프리미엄 식재료 큐레이션으로 차별화. 첫 구매 무료배송 쿠폰.',
+      creative:'새벽 배송 도착 영상, 신선 식재료 근접 촬영, 셰프 레시피 연계 콘텐츠',
+      targeting:'30~50대 식품 가치 소비층. 특히 자녀 있는 30~40대 여성 주부.',
+      retention:'컬리패스(무제한 무료배송 구독), 마이컬리 등급제, 정기배송 서비스',
+    }},
+
+  'gangnamunni': { key:'healthcare', name:'강남언니',
+    desc:'성형·피부과 O2O. 의료 광고는 규제+경쟁 이중으로 CPC 매우 높음.',
+    cpc:{ google:{min:1600,avg:3500,max:8000}, naver:{min:1200,avg:2800,max:7500}, meta:{min:600,avg:1400,max:3200}, kakao:{min:500,avg:1100,max:2700} },
+    // 성형외과·피부과 파워링크: 5,000~30,000원/click(최고 업종 중 하나). 플랫폼 vs 병원 직접 입찰로 경쟁 극심
+    why:'성형·피부과 키워드는 의료업 중 최고 CPC. 병원들이 직접 입찰해 플랫폼과 경쟁하는 구조.',
+    adStrategy:{
+      channels:['인스타그램(비포애프터)','유튜브 뷰티 채널','네이버 검색(성형 키워드)','틱톡','카카오'],
+      acquisition:'실제 후기 기반 신뢰 콘텐츠 → 앱 설치 → 상담 예약. 비포애프터 사례가 핵심 전환 요소.',
+      creative:'실제 시술 후기 영상, 의사 인터뷰, 가격 비교 배너, 이벤트 프로모션',
+      targeting:'20~35세 여성. 뷰티·성형 관심사. 강남·부산 등 의료 집중 지역.',
+      retention:'즐겨찾기 병원 알림, 예약 리마인더, 리뷰 작성 리워드',
+    }},
+
+  'zigzag': { key:'fashion', name:'지그재그',
+    desc:'여성 패션 전문 앱. 20대 여성 집중 타겟.',
+    cpc:{ google:{min:300,avg:660,max:1600}, naver:{min:240,avg:510,max:1300}, meta:{min:190,avg:440,max:1100}, kakao:{min:140,avg:320,max:820} },
+    why:'여성 패션 버티컬. 에이블리·무신사우먼 등과 동일 키워드 경쟁.',
+    adStrategy:{
+      channels:['인스타그램 릴스','틱톡','카카오 모먼트','유튜브','앱 푸시'],
+      acquisition:'AI 스타일 추천으로 개인화 쇼핑 경험 제공 → 재방문 유도. Z페이 간편결제로 결제 허들 제거.',
+      creative:'OOTD 스타일링 릴스, 인플루언서 착용컷, 빠른 배송 강조',
+      targeting:'16~28세 여성. 트렌디한 스트릿·캐주얼 패션 관심사.',
+      retention:'AI 추천 알고리즘, 찜 목록 알림, Z포인트 적립',
+    }},
+
+  'ably': { key:'fashion', name:'에이블리', domain:'a-bly.com',
+    desc:'20대 여성 타겟 패션 쇼핑 앱.',
+    cpc:{ google:{min:280,avg:600,max:1500}, naver:{min:210,avg:460,max:1150}, meta:{min:170,avg:400,max:1000}, kakao:{min:130,avg:300,max:750} },
+    why:'지그재그와 유사하나 보다 저가 상품 비중 높아 CPC 소폭 낮음.',
+    adStrategy:{
+      channels:['인스타그램','틱톡','카카오','앱 푸시','유튜브 쇼츠'],
+      acquisition:'합리적 가격대 + 빠른 배송. 인플루언서 착용 콘텐츠로 바이럴. 앱 첫 설치 쿠폰.',
+      creative:'인플루언서 착용 릴스, 가격 강조 배너, 신상 입고 알림 콘텐츠',
+      targeting:'16~30세 여성. 가성비 패션 소비층.',
+      retention:'에이블리 포인트, 매일 신상 입고 알림, 팔로우 셀러 기능',
+    }},
+
+  'inflearn': { key:'edu', name:'인프런',
+    desc:'개발·IT 교육 플랫폼. B2C/B2B 모두 타겟.',
+    cpc:{ google:{min:600,avg:1350,max:3200}, naver:{min:460,avg:1050,max:2500}, meta:{min:280,avg:640,max:1600}, kakao:{min:210,avg:490,max:1250} },
+    why:'IT 개발 교육 키워드는 B2B 수요와 겹쳐 CPC 교육 업종 평균보다 높음.',
+    adStrategy:{
+      channels:['Google 검색(개발 키워드)','유튜브 개발 채널','LinkedIn(B2B)','네이버 검색','개발 커뮤니티 광고'],
+      acquisition:'무료 강의 체험 → 유료 전환. 개발자 커뮤니티(깃허브, 디스코드) 내 바이럴. 취업·이직 수요 타겟.',
+      creative:'수강 후기 영상, 연봉 상승 사례, 강사 소개 콘텐츠, 무료 강의 CTA',
+      targeting:'20~35세 개발자·IT 취업 준비생. B2B는 기업 교육 담당자.',
+      retention:'학습 스트릭 기능, 수료증 발급, 로드맵 기반 커리큘럼',
+    }},
+
+  'classu': { key:'edu', name:'클래스유',
+    desc:'크리에이터 기반 온라인 클래스. 일반 교육보다 CPC 낮음.',
+    cpc:{ google:{min:400,avg:900,max:2200}, naver:{min:300,avg:700,max:1750}, meta:{min:200,avg:460,max:1150}, kakao:{min:150,avg:350,max:880} },
+    why:'취미/라이프스타일 강의 비중 높아 IT 교육 대비 경쟁 낮음.',
+    adStrategy:{
+      channels:['유튜브','인스타그램','카카오','네이버 검색','크리에이터 SNS 채널'],
+      acquisition:'유명 크리에이터·셀럽 강사 섭외 → SNS 팔로워 유입. 첫 강의 무료/할인으로 체험 유도.',
+      creative:'강사 티저 영상, 수강 후기, 클래스 미리보기 영상',
+      targeting:'20~40대. 자기계발·취미 관심층. 직종 불문 라이프스타일 타겟.',
+      retention:'클래스유 포인트, 수료증, 강사와 소통 기능',
+    }},
+
+  'coloso': { key:'edu', name:'콜로소',
+    desc:'디자인·크리에이티브 전문 클래스.',
+    cpc:{ google:{min:380,avg:860,max:2100}, naver:{min:290,avg:660,max:1650}, meta:{min:190,avg:440,max:1100}, kakao:{min:140,avg:330,max:840} },
+    why:'디자인 교육 니치 마켓. 클래스101 등과 동일 키워드 경쟁.',
+    adStrategy:{
+      channels:['인스타그램(디자인 비주얼)','유튜브','Pinterest','Behance','네이버 검색'],
+      acquisition:'포트폴리오 결과물 비포애프터 콘텐츠로 유입. 디자인 커뮤니티 내 바이럴.',
+      creative:'수강생 작품 쇼케이스, 강사 실무 작업 과정 영상, 포트폴리오 완성 사례',
+      targeting:'디자인·영상·사진 관심 20~35세. 프리랜서·취업준비생.',
+      retention:'작품 갤러리 공유 기능, 수료증, 강사 피드백 시스템',
+    }},
+
+  // ── 이커머스 ──
+  'gmarket': { key:'ecommerce', name:'G마켓', desc:'오픈마켓 1세대. 다양한 셀러 입점, 스마일페이 연동.',
+    cpc:{ google:{min:350,avg:780,max:1900}, naver:{min:280,avg:620,max:1600}, meta:{min:180,avg:420,max:1050}, kakao:{min:130,avg:320,max:820} },
+    why:'오픈마켓 특성상 셀러들이 각자 광고 집행. 이베이코리아 시절부터 검색광고 경쟁 강함.',
+    adStrategy:{
+      channels:['네이버 쇼핑검색','Google 쇼핑','TV광고','카카오','앱 푸시'],
+      acquisition:'스마일카드·스마일페이 혜택으로 신규 유입. G마켓·옥션 통합 로그인으로 크로스셀.',
+      creative:'특가 배너, 스마일클럽 혜택 광고, 브랜드 기획전 배너',
+      targeting:'25~50대 전 연령. 가격 비교 소비자 중심.',
+      retention:'스마일클럽 멤버십(유료), 스마일페이 포인트, 빅스마일데이 이벤트',
+    }},
+
+  'lotteon': { key:'ecommerce', name:'롯데온', desc:'롯데그룹 통합 쇼핑 플랫폼. 백화점·마트·하이마트 통합.',
+    cpc:{ google:{min:320,avg:720,max:1750}, naver:{min:250,avg:560,max:1400}, meta:{min:160,avg:380,max:960}, kakao:{min:120,avg:290,max:740} },
+    why:'롯데 그룹사 상품 통합으로 카테고리 넓음. 롯데백화점 고객층 타겟 광고 활발.',
+    adStrategy:{
+      channels:['TV광고','네이버 쇼핑검색','롯데 앱 연동','카카오','이메일 마케팅'],
+      acquisition:'롯데포인트(L.POINT) 연동으로 롯데백화점·마트 고객 자연 유입. 쿠폰 첫 구매 유도.',
+      creative:'백화점 감성 배너, 프리미엄 브랜드 기획전, 롯데 행사 연계 광고',
+      targeting:'30~55대. 롯데 브랜드 충성 고객, 백화점 선호층.',
+      retention:'L.POINT 통합 적립, 롯데온머니, VIP 등급제',
+    }},
+
+  // ── 패션/뷰티 ──
+  'oliveyoung': { key:'beauty', name:'올리브영', desc:'국내 1위 H&B 스토어. 온·오프라인 통합 뷰티 플랫폼.',
+    cpc:{ google:{min:380,avg:820,max:2000}, naver:{min:290,avg:640,max:1600}, meta:{min:200,avg:460,max:1150}, kakao:{min:150,avg:350,max:880} },
+    why:'뷰티 카테고리 내 브랜드들이 올리브영 유입 트래픽을 외부 광고로 확보하려는 경쟁 강함.',
+    adStrategy:{
+      channels:['인스타그램(뷰티 비주얼)','유튜브 뷰티 채널','네이버 검색','카카오','인플루언서 협찬','앱 푸시'],
+      acquisition:'올영세일 정기행사로 대규모 유입. 뷰티 인플루언서 협업 콘텐츠 → 앱 설치.',
+      creative:'뷰티 튜토리얼 영상, 신제품 언박싱, 올영세일 타이머 배너',
+      targeting:'15~35세 여성. 스킨케어·메이크업 관심층.',
+      retention:'올리브포인트, 등급제, 타임딜 알림, 오늘드림(당일배송)',
+    }},
+
+  // ── 핀테크 ──
+  'kakaopay': { key:'finance', name:'카카오페이', domain:'kakaopay.com', desc:'카카오 간편결제·투자·보험 플랫폼.',
+    cpc:{ google:{min:1400,avg:3000,max:6200}, naver:{min:1100,avg:2300,max:5000}, meta:{min:600,avg:1300,max:3000}, kakao:{min:450,avg:1000,max:2500} },
+    why:'카카오페이증권·보험 진출로 금융 전반 키워드 경쟁. 카카오뱅크와 유사한 경쟁 구도.',
+    adStrategy:{
+      channels:['카카오톡 채널','유튜브','인스타그램','네이버 검색','카카오 디스플레이'],
+      acquisition:'카카오톡 5천만 사용자 베이스 활용. 카카오페이 QR결제 오프라인 확산.',
+      creative:'간편결제 UX 데모, 혜택 비교 배너, 투자 수익률 소재',
+      targeting:'20~40대 카카오 사용자 전체. 투자는 25~40대.',
+      retention:'페이포인트 적립, 청구서 자동납부, 카카오페이 보험 알림',
+    }},
+
+  // ── 플랫폼 ──
+  'kakao': { key:'tech', name:'카카오', desc:'카카오톡 기반 국내 최대 모바일 플랫폼. 광고·커머스·게임 운영.',
+    cpc:{ google:{min:600,avg:1300,max:3200}, naver:{min:500,avg:1050,max:2600}, meta:{min:300,avg:680,max:1700}, kakao:{min:220,avg:520,max:1300} },
+    why:'카카오 서비스 광고는 자사 채널 의존도 높고, 외부 유입은 브랜드 인지도 강화 목적.',
+    adStrategy:{
+      channels:['카카오톡 비즈보드','카카오 채널','TV광고','유튜브','네이버 검색'],
+      acquisition:'카카오톡 기본 내장(DAU 4000만+)으로 자연 유입. 신규 서비스는 카카오톡 내 탭 추가.',
+      creative:'카카오 캐릭터 활용 배너, 서비스 신기능 소개 영상',
+      targeting:'전 연령대. 서비스별 세분화.',
+      retention:'카카오 에코시스템(톡·페이·뱅크·게임·쇼핑) 연동으로 플랫폼 락인',
+    }},
+
+  'naver': { key:'tech', name:'네이버', desc:'국내 1위 검색·쇼핑·콘텐츠 플랫폼.',
+    cpc:{ google:{min:500,avg:1100,max:2800}, naver:{min:400,avg:900,max:2300}, meta:{min:280,avg:620,max:1600}, kakao:{min:200,avg:460,max:1200} },
+    why:'네이버 자사 광고(파워링크·쇼핑검색)가 핵심. 외부 광고는 브랜드·신규 서비스 중심.',
+    adStrategy:{
+      channels:['네이버 파워링크(자사)','TV광고','유튜브','카카오','인스타그램'],
+      acquisition:'검색 1위 포지션으로 자연 유입. 네이버플러스 멤버십으로 서비스 통합 구독 유도.',
+      creative:'서비스 편의성 소개 영상, 쇼핑·페이 혜택 배너',
+      targeting:'전 연령대. 서비스별 타겟 상이.',
+      retention:'네이버플러스 멤버십, 포인트 적립, 클로바 AI 연동',
+    }},
+
+  // ── 전자/제조 ──
+  'samsung': { key:'tech', name:'삼성전자', desc:'글로벌 전자 1위 브랜드. 스마트폰·TV·가전 제조·판매.',
+    cpc:{ google:{min:800,avg:1800,max:4500}, naver:{min:600,avg:1400,max:3500}, meta:{min:400,avg:900,max:2300}, kakao:{min:300,avg:700,max:1800} },
+    why:'프리미엄 가전·스마트폰 카테고리는 LG·애플 등과의 경쟁으로 CPC 높음.',
+    adStrategy:{
+      channels:['TV·OTT 광고(대규모)','유튜브','구글 디스플레이','인스타그램','네이버 검색','옥외광고'],
+      acquisition:'신제품 출시 이벤트·예약 판매로 유입. 삼성닷컴 직판 채널 강화.',
+      creative:'신제품 언팩 영상, 갤럭시·QLED 스펙 비교, 셀럽 모델 광고',
+      targeting:'전 연령대. 갤럭시는 20~45대, 가전은 30~55대.',
+      retention:'삼성 멤버스 앱, 제품 연동 생태계(SmartThings), AS 서비스',
+    }},
+
+  'lge': { key:'tech', name:'LG전자', domain:'lg.com', desc:'가전·TV·B2B 솔루션 글로벌 제조사.',
+    cpc:{ google:{min:700,avg:1600,max:4000}, naver:{min:550,avg:1250,max:3200}, meta:{min:350,avg:800,max:2100}, kakao:{min:260,avg:620,max:1600} },
+    why:'OLED TV·가전 프리미엄 포지션으로 삼성과 동일 키워드 입찰 경쟁.',
+    adStrategy:{
+      channels:['TV광고','유튜브','구글 디스플레이','네이버 검색','인스타그램'],
+      acquisition:'LG ThinQ 스마트홈 생태계 체험 마케팅. 가전 교체 주기 타겟 리타겟팅.',
+      creative:'OLED 화질 비교 영상, 가전 인테리어 감성 이미지, 에너지 효율 소재',
+      targeting:'30~55대. 프리미엄 가전 관심층. 인테리어 관심 신혼부부.',
+      retention:'LG ThinQ 앱 연동, LG 멤버십, 10년 AS 보증',
+    }},
+
+  'hyundai': { key:'auto', name:'현대차', desc:'국내 1위 완성차 브랜드. 전기차·SUV 라인업 강화.',
+    cpc:{ google:{min:900,avg:2000,max:5000}, naver:{min:700,avg:1600,max:4000}, meta:{min:450,avg:1000,max:2600}, kakao:{min:340,avg:780,max:2000} },
+    why:'자동차는 고가 구매 결정 → 광고 경쟁 치열. 전기차(아이오닉) 키워드는 테슬라와도 경쟁.',
+    adStrategy:{
+      channels:['TV·OTT 광고','유튜브(자동차 채널)','네이버 검색','구글','인스타그램','자동차 커뮤니티'],
+      acquisition:'신차 출시 이벤트·시승 신청 CTA. 현대차 공식몰(Hmall) 온라인 계약 유도.',
+      creative:'신차 공개 영상, 시승 경험 콘텐츠, 전기차 주행거리 소재',
+      targeting:'25~55세. 신차 구매 의향자. 전기차는 친환경 관심층.',
+      retention:'블루멤버스 포인트, 커넥티드카(블루링크) 서비스',
+    }},
+
+  'kia': { key:'auto', name:'기아', desc:'현대차그룹 계열 글로벌 자동차 브랜드. EV 라인업 확대.',
+    cpc:{ google:{min:850,avg:1900,max:4800}, naver:{min:660,avg:1500,max:3800}, meta:{min:420,avg:950,max:2500}, kakao:{min:320,avg:740,max:1900} },
+    why:'현대차와 동일 그룹이지만 별도 브랜드 광고. EV6·EV9 출시로 전기차 키워드 경쟁 가세.',
+    adStrategy:{
+      channels:['TV·OTT 광고','유튜브','네이버 검색','구글','인스타그램'],
+      acquisition:'리브랜딩 후 글로벌 감성 강조. 온라인 계약 시스템(기아닷컴) 강화.',
+      creative:'Movement that inspires 브랜드 영상, EV 스펙 비교, 디자인 감성 이미지',
+      targeting:'25~50세. 프리미엄·전기차 관심층. 현대차와 비교 검색층.',
+      retention:'기아 멤버스, UVO 커넥티드카 서비스',
+    }},
+
+  // ── 부동산/O2O ──
+  'zigbang': { key:'realestate', name:'직방', desc:'국내 1위 부동산 앱. 아파트·빌라·오피스텔 매물 중개.',
+    cpc:{ google:{min:900,avg:2100,max:5200}, naver:{min:700,avg:1700,max:4200}, meta:{min:400,avg:900,max:2300}, kakao:{min:300,avg:700,max:1800} },
+    why:'부동산 키워드는 국내 최고 CPC 군. 직방·다방·호갱노노 등 동일 키워드 경쟁.',
+    adStrategy:{
+      channels:['TV광고','네이버 부동산 검색','유튜브','카카오','인스타그램'],
+      acquisition:'3D 가상 집들이 체험 콘텐츠로 앱 설치 유도. 아파트 시세 정보 무료 제공.',
+      creative:'3D 집들이 영상, 아파트 시세 비교 배너, 실거래가 정보 소재',
+      targeting:'25~45세. 이사 준비·내집 마련 관심층.',
+      retention:'매물 알림 설정, 관심 단지 시세 알림, 청약 정보',
+    }},
+
+  'ohou': { key:'realestate', name:'오늘의집', desc:'인테리어·가구·라이프스타일 커머스+커뮤니티 플랫폼.',
+    cpc:{ google:{min:500,avg:1100,max:2800}, naver:{min:380,avg:860,max:2200}, meta:{min:250,avg:580,max:1450}, kakao:{min:190,avg:440,max:1100} },
+    why:'인테리어 카테고리는 고가 구매·B2B 수요 동반. 가구 브랜드들의 입찰 경쟁.',
+    adStrategy:{
+      channels:['인스타그램(인테리어 비주얼)','유튜브','핀터레스트','네이버 검색','카카오'],
+      acquisition:'유저 인테리어 사례 콘텐츠 커뮤니티 → 앱 설치 → 쇼핑 전환. 집들이 콘텐츠 바이럴.',
+      creative:'집들이 인테리어 비포애프터, 가구 스타일링, 인플루언서 홈투어',
+      targeting:'20~40대. 이사·신혼·인테리어 관심층.',
+      retention:'집들이 사진 공유 커뮤니티, 관심 상품 알림, 이달의 딜',
+    }},
+
+  'daangn': { key:'ecommerce', name:'당근', desc:'지역 기반 중고거래·동네 커뮤니티 앱.',
+    cpc:{ google:{min:200,avg:480,max:1200}, naver:{min:160,avg:380,max:960}, meta:{min:120,avg:290,max:730}, kakao:{min:90,avg:220,max:560} },
+    why:'로컬 타겟팅 기반으로 전국 단위 경쟁 낮음. 중고거래 특성상 CPC 낮은 편.',
+    adStrategy:{
+      channels:['TV광고','인스타그램','유튜브','앱 푸시','지역 타겟 광고'],
+      acquisition:'당근페이·당근알바·동네가게 등 서비스 확장으로 유입 다변화. 입소문 중심 성장.',
+      creative:'동네 이웃 감성 광고, 중고거래 성공 사례, 당근페이 편의성 소재',
+      targeting:'전 연령대. 지역 기반 타겟팅. 중고거래 관심 25~45세.',
+      retention:'동네 커뮤니티 게시판, 단골 가게 알림, 당근페이 포인트',
+    }},
+
+  // ── 게임 ──
+  'krafton': { key:'game', name:'크래프톤', desc:'배틀그라운드(PUBG) 개발사. 글로벌 게임 IP 보유.',
+    cpc:{ google:{min:300,avg:680,max:1700}, naver:{min:240,avg:540,max:1350}, meta:{min:180,avg:420,max:1050}, kakao:{min:130,avg:310,max:790} },
+    why:'게임 카테고리는 글로벌 경쟁. 배그 유저 재유입·신규 게임 출시 광고 집중.',
+    adStrategy:{
+      channels:['유튜브(게임 채널)','트위치','유튜브 게임 광고','인스타그램','구글 UAC'],
+      acquisition:'배틀그라운드 무료화(PC/모바일) + 시즌 업데이트 이벤트로 재유입. 스트리머 협찬.',
+      creative:'게임플레이 하이라이트, 신규 시즌 트레일러, 스트리머 리뷰 콘텐츠',
+      targeting:'15~30세 남성. 배틀로얄·슈터 게임 관심층.',
+      retention:'시즌 패스(배틀패스), 신규 콘텐츠 업데이트, 토너먼트 이벤트',
+    }},
+
+  // ── 교육 ──
+  'class101': { key:'edu', name:'클래스101', desc:'크리에이터 기반 온라인 클래스. 취미·자기계발 중심.',
+    cpc:{ google:{min:420,avg:940,max:2300}, naver:{min:320,avg:730,max:1830}, meta:{min:210,avg:490,max:1230}, kakao:{min:160,avg:370,max:940} },
+    why:'클래스유·콜로소와 동일 크리에이터 교육 시장 경쟁.',
+    adStrategy:{
+      channels:['유튜브','인스타그램','카카오','네이버 검색','크리에이터 SNS'],
+      acquisition:'유명 크리에이터 강사 섭외 → 팬덤 유입. 월정액(올인원) 구독으로 전환.',
+      creative:'강사 티저 영상, 수강 결과물 쇼케이스, 올인원 구독 혜택',
+      targeting:'20~40대. 자기계발·취미 관심층.',
+      retention:'클래스101 올인원 월정액, 수료증, 클래스 이용권',
+    }},
+
+  // ── 콘텐츠 ──
+  'ridi': { key:'tech', name:'리디', desc:'웹툰·웹소설·전자책 콘텐츠 플랫폼.',
+    cpc:{ google:{min:350,avg:780,max:1950}, naver:{min:280,avg:620,max:1560}, meta:{min:180,avg:420,max:1050}, kakao:{min:130,avg:310,max:790} },
+    why:'웹툰 시장 네이버웹툰·카카오페이지와 경쟁. 콘텐츠 소비 키워드 경쟁.',
+    adStrategy:{
+      channels:['네이버 검색','유튜브','인스타그램','카카오','앱 푸시'],
+      acquisition:'무료 미리보기 → 유료 전환. 리디셀렉트 월정액 구독으로 락인.',
+      creative:'인기 웹툰 예고편, 작가 인터뷰, 신작 출시 배너',
+      targeting:'15~35세. 웹툰·웹소설·판타지 관심층.',
+      retention:'리디셀렉트 구독, 캐시 충전 이벤트, 작품 완결 알림',
+    }},
+
+  'melon': { key:'tech', name:'멜론', desc:'국내 최대 음악 스트리밍 서비스.',
+    cpc:{ google:{min:300,avg:680,max:1700}, naver:{min:240,avg:540,max:1360}, meta:{min:170,avg:400,max:1000}, kakao:{min:120,avg:300,max:760} },
+    why:'스포티파이·유튜브뮤직·지니 등과 구독 전쟁. 음악 스트리밍 키워드 경쟁.',
+    adStrategy:{
+      channels:['카카오(카카오 계열)','유튜브','인스타그램','TV광고','앱 스토어 광고'],
+      acquisition:'첫 달 무료/할인 체험 → 월정액 전환. 아이돌 팬덤 타겟 마케팅.',
+      creative:'신곡 뮤직비디오 연계 광고, 아티스트 협업 콘텐츠, 차트 TOP100 소재',
+      targeting:'15~35세. 음악 관심층. K팝 팬덤.',
+      retention:'멜론 티켓 연동, 아티스트 팬덤 기능, 오프라인 이벤트 정보',
+    }},
+
+  'wadiz': { key:'tech', name:'와디즈', desc:'크라우드펀딩·스타트업 투자 플랫폼.',
+    cpc:{ google:{min:400,avg:900,max:2250}, naver:{min:310,avg:700,max:1760}, meta:{min:200,avg:470,max:1180}, kakao:{min:150,avg:360,max:900} },
+    why:'펀딩 프로젝트별 광고 집행. 스타트업·혁신 제품 키워드 경쟁.',
+    adStrategy:{
+      channels:['인스타그램','페이스북','네이버 검색','카카오','유튜브'],
+      acquisition:'얼리버드 한정 특가 → 타이머 마감 긴박감으로 펀딩 참여 유도.',
+      creative:'신제품 데모 영상, 스토리텔링 캠페인, 펀딩 달성률 소재',
+      targeting:'25~45세. 얼리어답터·스타트업 관심층.',
+      retention:'리워드 발송 알림, 후속 프로젝트 알림, 메이커 팔로우',
+    }},
+
+  // ── 프리랜서/채용 ──
+  'wanted': { key:'tech', name:'원티드', desc:'IT·스타트업 채용 플랫폼. 합격 보상금 시스템.',
+    cpc:{ google:{min:700,avg:1600,max:4000}, naver:{min:540,avg:1240,max:3100}, meta:{min:350,avg:800,max:2000}, kakao:{min:260,avg:620,max:1560} },
+    why:'IT 채용 키워드는 B2B(기업) + B2C(구직자) 양방향 경쟁으로 CPC 높음.',
+    adStrategy:{
+      channels:['LinkedIn','구글 검색','인스타그램','유튜브','페이스북','개발자 커뮤니티'],
+      acquisition:'합격 시 50만원 보상금 바이럴 → 구직자 유입. 기업은 채용 성공 보수제.',
+      creative:'연봉 협상 성공 사례, IT 취업 인터뷰, 합격 보상금 강조',
+      targeting:'IT 직군 20~35세 구직자. 기업 HR담당자.',
+      retention:'커리어 프로필 관리, 맞춤 채용 알림, 이력서 피드백',
+    }},
+
+  'kmong': { key:'tech', name:'크몽', desc:'프리랜서 전문 마켓플레이스. IT·디자인·마케팅 서비스.',
+    cpc:{ google:{min:600,avg:1350,max:3400}, naver:{min:460,avg:1050,max:2650}, meta:{min:300,avg:690,max:1740}, kakao:{min:220,avg:530,max:1340} },
+    why:'프리랜서 플랫폼 경쟁(숨고·탈잉 등). B2B 수요로 CPC 높은 편.',
+    adStrategy:{
+      channels:['네이버 검색(외주 키워드)','구글','유튜브','인스타그램','링크드인'],
+      acquisition:'첫 의뢰 쿠폰 + 에스크로 안전결제 신뢰 강조. 전문가 포트폴리오 검색 유입.',
+      creative:'프리랜서 성공 사례, 서비스 비교 배너, 빠른 의뢰 CTA',
+      targeting:'20~45세 소상공인·스타트업·개인. 외주 필요 사업주.',
+      retention:'단골 전문가 재의뢰, 크몽 프리미엄 전문가 뱃지',
+    }},
+
+  // ── 클라우드/기타 ──
+  'ncloud': { key:'tech', name:'네이버클라우드', desc:'네이버 B2B 클라우드·AI 서비스 플랫폼.',
+    cpc:{ google:{min:1200,avg:2700,max:6800}, naver:{min:950,avg:2100,max:5300}, meta:{min:500,avg:1200,max:3000}, kakao:{min:380,avg:920,max:2300} },
+    why:'B2B 클라우드 키워드는 AWS·Azure·GCP와 경쟁. 기업 구매 결정자 타겟으로 CPC 매우 높음.',
+    adStrategy:{
+      channels:['Google 검색(B2B 키워드)','LinkedIn','IT 미디어 광고','유튜브','컨퍼런스 스폰서십'],
+      acquisition:'무료 크레딧 체험 → 유료 전환. 공공기관·중견기업 영업 병행.',
+      creative:'서비스 데모 영상, 보안·안정성 소재, 비용 절감 사례 연구',
+      targeting:'IT 담당자·CTO·스타트업 기술팀. 30~50대 B2B 의사결정자.',
+      retention:'기술 지원 SLA, 파트너 프로그램, 정기 교육 세미나',
+    }},
+
+  'skstoa': { key:'ecommerce', name:'SK스토아', desc:'SK그룹 홈쇼핑·T커머스 채널. TV+온라인 통합.',
+    cpc:{ google:{min:280,avg:640,max:1600}, naver:{min:220,avg:510,max:1280}, meta:{min:150,avg:350,max:880}, kakao:{min:110,avg:270,max:680} },
+    why:'TV홈쇼핑은 시청자 고령화로 디지털 전환 중. 온라인 광고 경쟁은 상대적으로 낮음.',
+    adStrategy:{
+      channels:['TV홈쇼핑(자체)','네이버 쇼핑검색','카카오','앱 푸시','이메일'],
+      acquisition:'TV 방송 연계 한정특가 → 앱 구매 유도. T멤버십 연동 할인.',
+      creative:'라이브커머스 방송 연계, 한정수량 타이머 배너, T포인트 혜택',
+      targeting:'35~65세. TV홈쇼핑 선호층. SK텔레콤 고객.',
+      retention:'T멤버십 포인트, VIP 고객 전용 특가, 정기 구독 상품',
+    }},
+
+  // ── 통신비 비교 (아정당, 모요, 성지야, 모두의 성지) ──
+  'ajungdang': { key:'tech', name:'아정당', domain:'ajd.co.kr', desc:'휴대폰 성지·알뜰폰 요금제 비교 커뮤니티.',
+    cpc:{ google:{min:250,avg:580,max:1450}, naver:{min:200,avg:460,max:1160}, meta:{min:130,avg:310,max:780}, kakao:{min:100,avg:240,max:600} },
+    why:'통신비 절약 키워드는 알뜰폰·단통법 관련 검색 수요 높음.',
+    adStrategy:{
+      channels:['네이버 카페·블로그','유튜브 리뷰','커뮤니티 광고','구글 검색'],
+      acquisition:'최저가 요금제·공시지원금 정보 제공으로 유기적 유입. 커뮤니티 기반 입소문.',
+      creative:'요금제 비교 표, 공시지원금 최신 정보, 성지 개통 후기',
+      targeting:'20~40대. 통신비 절약 관심층. 휴대폰 교체 검색층.',
+      retention:'최신 요금제 알림, 커뮤니티 활동 포인트',
+    }},
+
+  'moyo': { key:'tech', name:'모요', desc:'알뜰폰 요금제 비교·가입 플랫폼.',
+    cpc:{ google:{min:280,avg:640,max:1600}, naver:{min:220,avg:510,max:1280}, meta:{min:140,avg:340,max:850}, kakao:{min:110,avg:260,max:660} },
+    why:'알뜰폰 시장 성장으로 요금제 비교 키워드 경쟁 증가.',
+    adStrategy:{
+      channels:['네이버 검색(알뜰폰 키워드)','구글','유튜브','인스타그램','카카오'],
+      acquisition:'요금제 비교 무료 제공 → 가입 CTA. 통신비 절약 금액 강조.',
+      creative:'요금제 가격 비교 표, 절약 금액 계산기, 가입 간편함 소재',
+      targeting:'20~50대. 통신비 절약 관심층.',
+      retention:'요금제 변경 알림, 신규 출시 알림, 가입 리워드',
+    }},
+
+  'seongjiya': { key:'tech', name:'성지야', desc:'휴대폰 성지 매장 정보 및 가격 비교 서비스.',
+    cpc:{ google:{min:230,avg:540,max:1350}, naver:{min:185,avg:430,max:1080}, meta:{min:120,avg:290,max:730}, kakao:{min:90,avg:220,max:560} },
+    why:'성지 개통 정보 니치 마켓. 네이버 카페 경쟁 주로.',
+    adStrategy:{
+      channels:['네이버 카페','네이버 검색','유튜브 리뷰채널','커뮤니티'],
+      acquisition:'실시간 성지 가격 정보 제공으로 유기적 유입. 카페 회원 활동 기반.',
+      creative:'최저가 단말기 정보, 성지 위치 안내, 개통 후기',
+      targeting:'10~40대. 휴대폰 저렴하게 구입 원하는 층.',
+      retention:'신규 성지 알림, 회원 등급제, 후기 포인트',
+    }},
+
+  'modooseongji': { key:'tech', name:'모두의 성지', domain:'modusj.com', desc:'전국 휴대폰 성지 매장 가격 비교 플랫폼.',
+    cpc:{ google:{min:220,avg:510,max:1280}, naver:{min:180,avg:410,max:1030}, meta:{min:115,avg:275,max:690}, kakao:{min:88,avg:210,max:530} },
+    why:'성지야와 유사 경쟁. 닫힌 커뮤니티 → 앱/웹으로 확장 중.',
+    adStrategy:{
+      channels:['네이버 검색','유튜브','커뮤니티(디시·루리웹)','앱 스토어'],
+      acquisition:'전국 성지 매장 DB 제공으로 유입. 지역별 최저가 검색 기능.',
+      creative:'지역별 최저가 단말기 배너, 성지 지도 UI 소개',
+      targeting:'10~40대. 스마트폰 저가 구매 관심층.',
+      retention:'매장 가격 변동 알림, 찜 매장 알림',
+    }},
+
+  // ── 통신사 (Telco) ──
+  'tworld': { key:'tech', name:'SKT T월드', domain:'tworld.co.kr',
+    desc:'SK텔레콤 공식 스마트폰·요금제 판매몰. 번호이동·기기변경·약정 키워드 경쟁 극심.',
+    cpc:{ google:{min:1800,avg:3800,max:8500}, naver:{min:1400,avg:3000,max:7000}, meta:{min:700,avg:1700,max:3800}, kakao:{min:550,avg:1300,max:3000} },
+    why:'통신사 단말기+요금제 키워드에서 KT·LGU+와 정면 경쟁. 기기변경·번호이동 CPC 최상위권.',
+    adStrategy:{
+      channels:['TV·OTT 광고','네이버 검색(갤럭시·아이폰 키워드)','Google','카카오 모먼트','앱 푸시','옥외광고'],
+      acquisition:'번호이동 혜택·공시지원금 강조. T멤버십·0년약정 프로모션으로 전환 유도.',
+      creative:'갤럭시·아이폰 출시 연계 광고, 지원금 비교 배너, 요금제 절약 소재',
+      targeting:'전 연령대. 스마트폰 교체 주기(2~3년) 타겟. 번호이동 의향자.',
+      retention:'T멤버십, 가족결합 할인, T우주 구독 서비스',
+    }},
+
+  'kt': { key:'tech', name:'KT 올레샵', domain:'kt.com',
+    desc:'KT 공식 스마트폰·인터넷·IPTV 판매 채널. 기가인터넷+모바일 결합 강점.',
+    cpc:{ google:{min:1700,avg:3600,max:8000}, naver:{min:1350,avg:2800,max:6500}, meta:{min:680,avg:1600,max:3600}, kakao:{min:520,avg:1250,max:2900} },
+    why:'SKT·LGU+와 동일 키워드 경쟁. 인터넷·TV 결합 상품 키워드까지 추가 경쟁.',
+    adStrategy:{
+      channels:['TV·OTT 광고','네이버 검색','Google','카카오','앱 푸시'],
+      acquisition:'인터넷+TV+모바일 결합 할인으로 가족 고객 묶기. 기가인터넷 번들 강조.',
+      creative:'단말기+요금제 결합 혜택 배너, 기가인터넷 속도 비교, 갤럭시·아이폰 지원금',
+      targeting:'30~55세 가족 단위 고객. 결합 상품 관심층.',
+      retention:'KT멤버십, 가족결합 할인, 기가지니 AI 서비스',
+    }},
+
+  'lguplus': { key:'tech', name:'LG U+ 유플러스', domain:'lguplus.com',
+    desc:'LG U+ 공식 스마트폰·5G·홈서비스 판매 채널. MZ 타겟 콘텐츠 차별화.',
+    cpc:{ google:{min:1600,avg:3400,max:7500}, naver:{min:1250,avg:2700,max:6200}, meta:{min:640,avg:1500,max:3400}, kakao:{min:490,avg:1180,max:2700} },
+    why:'3위 통신사로 점유율 확대 위한 공격적 광고. MZ세대 5G 요금제 경쟁 치열.',
+    adStrategy:{
+      channels:['TV·OTT 광고','유튜브','네이버 검색','Google','인스타그램','카카오'],
+      acquisition:'5G 요금제 특화 혜택·유튜브 프리미엄 번들로 MZ 공략. U+아이돌라이브 등 콘텐츠 차별화.',
+      creative:'5G 속도 강조, 아이돌 모델 광고, 요금제 비교 배너',
+      targeting:'20~35세 MZ세대. 5G·콘텐츠 소비 관심층.',
+      retention:'U+멤버십, U+아이돌라이브, 가족결합 할인',
+    }},
+
+  // ── 스마트폰 브랜드 ──
+  'apple': { key:'tech', name:'Apple 코리아', domain:'apple.com',
+    desc:'아이폰·아이패드·맥 공식 판매 사이트. 프리미엄 브랜드 포지션.',
+    cpc:{ google:{min:1400,avg:2900,max:6500}, naver:{min:1100,avg:2300,max:5500}, meta:{min:700,avg:1500,max:3500}, kakao:{min:520,avg:1150,max:2700} },
+    why:'아이폰 신규 출시 시즌(매년 9~10월) CPC 급등. 삼성 정면 경쟁 + 통신 3사가 아이폰 키워드 입찰.',
+    adStrategy:{
+      channels:['TV·유튜브(감성 영상)','네이버 검색(아이폰 키워드)','Google','인스타그램','애플 자체 채널'],
+      acquisition:'신제품 출시 이벤트·예약 판매 CTA. Apple Store 방문 체험 → 온라인 구매 전환.',
+      creative:'미니멀 감성 영상, 카메라 성능 비교, 환경 스토리(탄소중립) 소재',
+      targeting:'전 연령대. 특히 아이폰 충성 고객(15~45세). 갤럭시→아이폰 전환 타겟.',
+      retention:'애플 생태계(아이클라우드·에어팟·애플워치·맥) 연동으로 강력한 락인',
+    }},
+
+  'xiaomi': { key:'tech', name:'샤오미', domain:'mi.com',
+    desc:'중국 1위 가성비 스마트폰·IoT 브랜드. 한국 시장 확장 중.',
+    cpc:{ google:{min:400,avg:880,max:2200}, naver:{min:320,avg:700,max:1750}, meta:{min:200,avg:460,max:1150}, kakao:{min:150,avg:350,max:880} },
+    why:'삼성·애플 대비 가성비 포지션. 스펙 비교 키워드에서 경쟁 가세.',
+    adStrategy:{
+      channels:['유튜브','인스타그램','네이버 쇼핑검색','Google 쇼핑','앱 스토어'],
+      acquisition:'가성비 강조 + 무선이어폰·스마트홈 기기 번들로 Mi 생태계 유입.',
+      creative:'스펙 비교 배너(동가격대 삼성 vs 샤오미), IoT 생태계 소개',
+      targeting:'20~35세 테크 얼리어답터. 가성비 소비층.',
+      retention:'Mi 생태계(Mi Home 앱) 연동, 커뮤니티 이벤트',
+    }},
+
+  'sony_xperia': { key:'tech', name:'Sony Xperia', domain:'sony.com',
+    desc:'소니 엑스페리아 스마트폰. 카메라·엔터테인먼트 특화 프리미엄 포지션.',
+    cpc:{ google:{min:600,avg:1350,max:3200}, naver:{min:480,avg:1050,max:2600}, meta:{min:300,avg:680,max:1700}, kakao:{min:220,avg:530,max:1340} },
+    why:'프리미엄 카메라폰 시장에서 삼성·애플·구글 픽셀과 경쟁.',
+    adStrategy:{
+      channels:['유튜브(카메라 리뷰 채널)','Google','네이버','인스타그램'],
+      acquisition:'알파 카메라 기술 탑재 강조. 사진·영상 크리에이터 타겟.',
+      creative:'카메라 스펙 비교 영상, 4K 촬영 샘플, 디자인 감성',
+      targeting:'25~45세 카메라·크리에이터 관심층.',
+      retention:'Sony 생태계(헤드폰·카메라·PS) 연동',
+    }},
+
+  'nokia_phones': { key:'tech', name:'Nokia', domain:'nokia.com',
+    desc:'핀란드 스마트폰 브랜드. 순정 안드로이드·장기 업데이트 보장.',
+    cpc:{ google:{min:350,avg:780,max:1950}, naver:{min:280,avg:620,max:1560}, meta:{min:180,avg:420,max:1050}, kakao:{min:130,avg:310,max:790} },
+    why:'프리미엄 대비 저가 포지션. 내구성·순정OS 마니아 타겟.',
+    adStrategy:{
+      channels:['Google','유튜브','네이버 쇼핑검색'],
+      acquisition:'순정 안드로이드·3년 업데이트 보장 강조. 가성비 실용 타겟.',
+      creative:'내구성·순정 OS 소재, 클래식 브랜드 감성',
+      targeting:'30~50세 실용적 스마트폰 소비자.',
+      retention:'업데이트 보장 정책, Nokia 커뮤니티 포럼',
+    }},
+
+  'asus_phones': { key:'tech', name:'ASUS/ROG Phone', domain:'asus.com',
+    desc:'게이밍 특화 ROG Phone 및 젠폰 시리즈. 하이엔드 게이머 타겟.',
+    cpc:{ google:{min:500,avg:1100,max:2800}, naver:{min:400,avg:880,max:2200}, meta:{min:250,avg:580,max:1450}, kakao:{min:190,avg:440,max:1100} },
+    why:'게이밍폰 시장에서 레드매직·레이저폰과 경쟁. 성능 키워드 CPC 높음.',
+    adStrategy:{
+      channels:['유튜브(게임 채널)','트위치','Google','인스타그램','게이밍 커뮤니티'],
+      acquisition:'게임 스트리머 협찬 + ROG 성능 벤치마크 콘텐츠로 게이머 유입.',
+      creative:'게임 성능 비교 영상, 방열·디스플레이 스펙 소재',
+      targeting:'15~35세 하드코어 게이머.',
+      retention:'ROG 게이밍 생태계(이어폰·마우스·노트북) 연동',
+    }},
+
+  'motorola': { key:'tech', name:'Motorola', domain:'motorola.com',
+    desc:'미국 레노버 계열 스마트폰. 가성비·순정 OS 포지션.',
+    cpc:{ google:{min:380,avg:840,max:2100}, naver:{min:300,avg:670,max:1680}, meta:{min:190,avg:445,max:1115}, kakao:{min:145,avg:338,max:848} },
+    why:'한국 내 인지도 낮으나 글로벌 시장에서 삼성 중저가와 경쟁.',
+    adStrategy:{
+      channels:['Google','유튜브','네이버 쇼핑'],
+      acquisition:'글로벌 인지도 + 가성비 강조. 특정 채널 파트너십 통한 유통.',
+      creative:'가성비 스펙 비교, Moto 시리즈 소개',
+      targeting:'20~40세 가성비 스마트폰 소비자.',
+      retention:'Moto 앱·소프트웨어 업데이트',
+    }},
+
+  'googlepixel': { key:'tech', name:'Google Pixel', domain:'store.google.com',
+    desc:'구글 공식 스마트폰 픽셀 시리즈. AI·카메라 특화.',
+    cpc:{ google:{min:800,avg:1800,max:4500}, naver:{min:640,avg:1440,max:3600}, meta:{min:400,avg:900,max:2250}, kakao:{min:300,avg:680,max:1700} },
+    why:'삼성·애플 대비 작은 시장점유율이나 AI·카메라 키워드에서 치열한 경쟁.',
+    adStrategy:{
+      channels:['Google 검색·YouTube(자체 채널 우위)','인스타그램','네이버'],
+      acquisition:'Google AI 기능(Magic Eraser·AI 통화 차단) 강조. 구글 생태계 연동 강점.',
+      creative:'AI 사진 편집 데모 영상, 카메라 야간 촬영 비교',
+      targeting:'25~40세 테크 얼리어답터. 구글 서비스 헤비유저.',
+      retention:'Google One 구독, Pixel 업데이트 우선 보장',
+    }},
+
+  // ── 국내 주요 오픈마켓·쇼핑 ──
+  'elevenst': { key:'ecommerce', name:'11번가', domain:'11st.co.kr',
+    desc:'SK 계열 오픈마켓. 십일절 행사로 유명. Amazon 파트너십.',
+    cpc:{ google:{min:320,avg:710,max:1750}, naver:{min:250,avg:560,max:1400}, meta:{min:160,avg:378,max:948}, kakao:{min:120,avg:287,max:720} },
+    why:'쿠팡·네이버쇼핑 등과 오픈마켓 트래픽 경쟁. 11.11 십일절 시즌 CPC 급등.',
+    adStrategy:{
+      channels:['네이버 쇼핑검색','TV광고','Google 쇼핑','카카오','앱 푸시'],
+      acquisition:'십일절 이벤트(11.11) 대규모 할인으로 신규 유입. SK페이·Amazon 글로벌 스토어 혜택.',
+      creative:'십일절 특가 배너, 쿠폰 강조, 브랜드 기획전',
+      targeting:'25~50대 전 연령. 가격 비교 소비자.',
+      retention:'SK페이 포인트, OK캐쉬백 연동, 십일절 멤버 혜택',
+    }},
+
+  'auction': { key:'ecommerce', name:'옥션', domain:'auction.co.kr',
+    desc:'이베이 계열 오픈마켓. G마켓과 함께 스마일그룹 운영.',
+    cpc:{ google:{min:280,avg:640,max:1600}, naver:{min:220,avg:510,max:1280}, meta:{min:145,avg:348,max:872}, kakao:{min:110,avg:264,max:662} },
+    why:'G마켓과 통합 운영. 쿠팡 점유율 확대 이후 방어 광고 강화.',
+    adStrategy:{
+      channels:['네이버 쇼핑검색','Google 쇼핑','TV광고','카카오'],
+      acquisition:'스마일클럽 공동 혜택(G마켓·옥션 통합). 빅스마일데이 대규모 이벤트.',
+      creative:'경매 최저가 강조, 스마일배송 배너, 브랜드 기획전',
+      targeting:'30~55대. 가격 비교 소비자. G마켓 이용자 크로스.',
+      retention:'스마일클럽 통합 멤버십, OK캐쉬백',
+    }},
+
+  'wemakeprice': { key:'ecommerce', name:'위메프', domain:'wemakeprice.com',
+    desc:'소셜커머스 출신 이커머스. 특가딜·원더쇼핑 중심.',
+    cpc:{ google:{min:250,avg:580,max:1450}, naver:{min:200,avg:460,max:1150}, meta:{min:130,avg:313,max:785}, kakao:{min:100,avg:238,max:597} },
+    why:'쿠팡·티몬과 소셜커머스 경쟁. 효율 중심 광고 운영.',
+    adStrategy:{
+      channels:['네이버 검색','카카오','TV광고','인스타그램'],
+      acquisition:'원더쇼핑·타임특가 딜로 가격 민감 소비자 유입.',
+      creative:'타임세일 배너, 최저가 비교, 특가딜 강조',
+      targeting:'20~45대. 가격 민감 소비자.',
+      retention:'위메프포인트, 친구초대 리워드',
+    }},
+
+  'tmon': { key:'ecommerce', name:'티몬', domain:'tmon.co.kr',
+    desc:'소셜커머스 출신 이커머스. 타임딜·라이브커머스 운영.',
+    cpc:{ google:{min:240,avg:560,max:1400}, naver:{min:190,avg:445,max:1113}, meta:{min:125,avg:302,max:756}, kakao:{min:95,avg:230,max:575} },
+    why:'위메프와 동일 경쟁 구도. 타임딜·라이브 방송으로 차별화.',
+    adStrategy:{
+      channels:['네이버 검색','카카오','인스타그램','앱 푸시'],
+      acquisition:'타임딜·슈퍼세이브로 단기 집중 유입. 라이브커머스 방송 연계.',
+      creative:'타이머 타임세일 배너, 라이브 방송 알림',
+      targeting:'20~40대. 쇼핑 관심층. 특가 민감 소비자.',
+      retention:'티몬슈퍼세이브, 찜 상품 할인 알림',
+    }},
+
+  'ssg': { key:'ecommerce', name:'SSG닷컴', domain:'ssg.com',
+    desc:'신세계그룹 통합 쇼핑. 이마트·신세계백화점·스타필드 연계.',
+    cpc:{ google:{min:350,avg:800,max:2000}, naver:{min:280,avg:630,max:1575}, meta:{min:178,avg:428,max:1073}, kakao:{min:134,avg:323,max:808} },
+    why:'신세계백화점·이마트 고객층 타겟. 프리미엄 식품·명품 카테고리 CPC 높음.',
+    adStrategy:{
+      channels:['TV광고','네이버 쇼핑검색','카카오','인스타그램','이메일','앱 푸시'],
+      acquisition:'쓱(SSG) 당일배송 체험으로 신규 유입. 이마트 앱 연동 쿠폰.',
+      creative:'프리미엄 식품 비주얼, 쓱배송 속도 강조, 신세계포인트 혜택',
+      targeting:'30~55세. 프리미엄 소비층. 신세계 브랜드 충성 고객.',
+      retention:'신세계포인트 통합, SSG머니, 스타벅스 리워드 연동',
+    }},
+
+  'interpark': { key:'ecommerce', name:'인터파크', domain:'interpark.com',
+    desc:'공연·여행·도서·쇼핑 통합 플랫폼. 공연 티켓 1위 채널.',
+    cpc:{ google:{min:300,avg:680,max:1700}, naver:{min:240,avg:540,max:1350}, meta:{min:153,avg:367,max:920}, kakao:{min:115,avg:278,max:697} },
+    why:'공연·콘서트 티켓 키워드 경쟁. 여행은 야놀자·여기어때와도 경쟁.',
+    adStrategy:{
+      channels:['네이버 검색(공연·콘서트 키워드)','카카오','이메일','앱 푸시'],
+      acquisition:'아이돌·뮤지컬 공연 티켓 선예매 알림으로 팬덤 유입. 인터파크투어 번들.',
+      creative:'공연 포스터, 티켓 오픈 알림, 할인 쿠폰',
+      targeting:'15~40세. 공연·콘서트 팬덤. K팝 팬.',
+      retention:'공연 알림 서비스, 인터파크 포인트, 얼리버드 혜택',
+    }},
+
+  'himart': { key:'tech', name:'하이마트', domain:'himart.co.kr',
+    desc:'롯데 계열 가전·디지털 전문 유통. 오프라인 체험+온라인 구매 연계.',
+    cpc:{ google:{min:400,avg:890,max:2200}, naver:{min:320,avg:710,max:1775}, meta:{min:202,avg:463,max:1163}, kakao:{min:152,avg:353,max:885} },
+    why:'삼성·LG 가전 키워드에서 공식몰·다나와와 경쟁. 스마트폰 오프라인 판매 채널.',
+    adStrategy:{
+      channels:['TV광고','네이버 쇼핑검색','카카오','앱 푸시','오프라인 매장 연계'],
+      acquisition:'매장 체험 후 온라인 구매 연계. 무이자 할부 혜택으로 가전 구매 유도.',
+      creative:'가전 교체 시즌 배너, 무이자 할부 강조, 제품 상세 비교',
+      targeting:'30~60세. 가전 교체 주기 타겟. 롯데 VIP 고객.',
+      retention:'하이마트 멤버십, 롯데포인트 연동, 연장 보증 서비스',
+    }},
+
+  // ── 가격 비교 ──
+  'danawa': { key:'tech', name:'다나와', domain:'danawa.com',
+    desc:'국내 최대 IT·가전 가격 비교 사이트. 스펙 비교+최저가 검색.',
+    cpc:{ google:{min:200,avg:450,max:1100}, naver:{min:160,avg:360,max:900}, meta:{min:102,avg:243,max:608}, kakao:{min:77,avg:184,max:462} },
+    why:'가격 비교 사이트 방문자는 구매 직전 비교 단계. CPC 낮으나 구매 의향 높음.',
+    adStrategy:{
+      channels:['Google 디스플레이','네이버 검색','앱 스토어'],
+      acquisition:'최저가 검색·스펙 비교 콘텐츠로 자연 유입. SEO·콘텐츠 마케팅 중심.',
+      creative:'가격 비교 표, 최저가 알림 기능 소개',
+      targeting:'20~50대. IT·가전 가격 민감 소비자.',
+      retention:'다나와 가격 알림 앱, 비교 위젯',
+    }},
+
+  'enuri': { key:'ecommerce', name:'에누리', domain:'enuri.com',
+    desc:'이커머스 가격 비교·리뷰 플랫폼. 커뮤니티+최저가 결합.',
+    cpc:{ google:{min:180,avg:420,max:1050}, naver:{min:145,avg:335,max:840}, meta:{min:93,avg:223,max:560}, kakao:{min:70,avg:168,max:422} },
+    why:'다나와와 유사한 가격 비교 포지션. 커뮤니티·리뷰 콘텐츠 강점.',
+    adStrategy:{
+      channels:['Google','네이버 검색'],
+      acquisition:'리뷰·스펙 비교 콘텐츠로 자연 유입. SEO 의존도 높음.',
+      creative:'최저가 배너, 리뷰 요약 소재',
+      targeting:'20~50대. IT 구매 전 비교 검색층.',
+      retention:'가격 알림, 리뷰 작성 포인트',
+    }},
+
+  'ppomppu': { key:'ecommerce', name:'뽐뿌', domain:'ppomppu.co.kr',
+    desc:'핫딜·특가 정보 공유 커뮤니티. 자발적 공유 기반 자연 유입.',
+    cpc:{ google:{min:160,avg:380,max:950}, naver:{min:130,avg:308,max:770}, meta:{min:83,avg:200,max:502}, kakao:{min:63,avg:152,max:382} },
+    why:'커뮤니티 기반으로 유기적 방문이 대다수. 광고 집행 적고 CPC 낮음.',
+    adStrategy:{
+      channels:['네이버 검색','커뮤니티 배너','앱 스토어'],
+      acquisition:'핫딜 정보 자발적 공유로 자연 유입. 회원 활동이 핵심.',
+      creative:'특가 정보 배너, 회원 가입 유도',
+      targeting:'20~45대. 핫딜·특가 탐색층.',
+      retention:'핫딜 알림 설정, 등급별 혜택',
+    }},
+
+  // ── 중고 거래 ──
+  'joonggonara': { key:'ecommerce', name:'중고나라', domain:'joonggonara.co.kr',
+    desc:'국내 최대 중고 물품 거래 커뮤니티·앱. 네이버 카페 기반.',
+    cpc:{ google:{min:150,avg:360,max:900}, naver:{min:120,avg:290,max:725}, meta:{min:77,avg:185,max:465}, kakao:{min:58,avg:140,max:352} },
+    why:'중고 거래는 저가 품목 중심. 당근마켓과 경쟁하나 전국 단위 거래 커버.',
+    adStrategy:{
+      channels:['네이버 카페(자체 채널)','앱 스토어','카카오'],
+      acquisition:'네이버 카페 기반 커뮤니티 → 앱 전환. 안전결제 서비스로 신뢰 확보.',
+      creative:'중고 거래 안전성 강조, 다양한 품목 배너',
+      targeting:'20~45대. 중고 거래 관심층.',
+      retention:'안전결제 서비스, 판매자 신뢰도 점수 시스템',
+    }},
+
+  'bunjang': { key:'ecommerce', name:'번개장터', domain:'bunjang.co.kr',
+    desc:'MZ세대 중고 거래 앱. 패션·한정판 리셀 특화.',
+    cpc:{ google:{min:170,avg:400,max:1000}, naver:{min:136,avg:320,max:800}, meta:{min:87,avg:208,max:522}, kakao:{min:66,avg:158,max:397} },
+    why:'한정판 스니커즈·명품 리셀 시장 성장으로 CPC 상승. 당근·중고나라와 차별화.',
+    adStrategy:{
+      channels:['인스타그램','유튜브 쇼츠','카카오','앱 스토어'],
+      acquisition:'한정판 리셀·명품 중고 콘텐츠로 MZ 유입. 번개페이 안전결제 강조.',
+      creative:'한정판 스니커즈 리셀 소재, 중고 명품 언박싱',
+      targeting:'15~35세 MZ세대. 패션·한정판 소비자.',
+      retention:'번개페이 포인트, 팔로우 셀러 알림, 한정판 드롭 알림',
+    }},
+
+  'phonedana': { key:'tech', name:'폰다나', domain:'phonedana.com',
+    desc:'중고폰·리퍼폰 전문 쇼핑 플랫폼. 검수 인증 서비스.',
+    cpc:{ google:{min:220,avg:510,max:1280}, naver:{min:176,avg:408,max:1020}, meta:{min:112,avg:268,max:672}, kakao:{min:85,avg:204,max:511} },
+    why:'중고폰 시장 성장으로 경쟁 증가. 당근·중고나라·번개장터와 중고폰 세그먼트 경쟁.',
+    adStrategy:{
+      channels:['네이버 검색(중고폰 키워드)','Google','카카오'],
+      acquisition:'중고폰 최저가 비교 + 검수·보증 서비스로 신뢰 확보.',
+      creative:'중고폰 가격 비교, 검수 인증 배너',
+      targeting:'20~45대. 중고폰 구매 관심층.',
+      retention:'가격 알림, 모델별 시세 정보 서비스',
+    }},
+
+  // ── 글로벌 이커머스·정보 ──
+  'amazon': { key:'ecommerce', name:'Amazon', domain:'amazon.com',
+    desc:'글로벌 최대 이커머스. 한국 직구 수요 및 국내 셀러 진출 관련 키워드.',
+    cpc:{ google:{min:300,avg:680,max:1700}, naver:{min:240,avg:540,max:1350}, meta:{min:153,avg:367,max:920}, kakao:{min:115,avg:276,max:693} },
+    why:'글로벌 플랫폼이나 한국 직구 소비자·아마존 진출 셀러 타겟 키워드 경쟁.',
+    adStrategy:{
+      channels:['Google 검색(직구·Amazon 키워드)','유튜브','인스타그램','네이버'],
+      acquisition:'직구 대행·아마존 글로벌 스토어로 국내 소비자 유입.',
+      creative:'해외 직구 방법 가이드, 가격 비교, 아마존 셀러 진출 소재',
+      targeting:'20~45세. 해외 직구 관심층. 셀러 지망생.',
+      retention:'Amazon Prime, 구독 서비스, AWS 생태계',
+    }},
+
+  'ebay': { key:'ecommerce', name:'eBay', domain:'ebay.com',
+    desc:'글로벌 경매·중고 이커머스. 해외 직구·수집품 특화.',
+    cpc:{ google:{min:250,avg:580,max:1450}, naver:{min:200,avg:462,max:1158}, meta:{min:127,avg:305,max:766}, kakao:{min:96,avg:231,max:580} },
+    why:'이베이코리아 철수 후 해외 직구 채널로만 이용. 수집품·중고 직구 키워드 경쟁.',
+    adStrategy:{
+      channels:['Google','유튜브'],
+      acquisition:'글로벌 중고·수집품 구매 경험 강조. 직구 가이드 콘텐츠.',
+      creative:'해외 직구 가이드, 가격 비교, 수집품 소재',
+      targeting:'25~50대. 해외 직구·수집품 관심층.',
+      retention:'eBay Deals 알림, 셀러 팔로우',
+    }},
+
+  'bestbuy': { key:'tech', name:'Best Buy', domain:'bestbuy.com',
+    desc:'미국 최대 가전·전자제품 유통 채널. 해외 직구 관심층 타겟.',
+    cpc:{ google:{min:280,avg:640,max:1600}, naver:{min:224,avg:512,max:1280}, meta:{min:142,avg:342,max:858}, kakao:{min:107,avg:258,max:648} },
+    why:'한국에서는 직구 채널로 인식. 미국 가전·스마트폰 출시 정보 수요.',
+    adStrategy:{
+      channels:['Google','유튜브'],
+      acquisition:'미국 신제품 출시 + 직구 가격 비교로 자연 유입.',
+      creative:'미국 가전 가격 비교, 직구 배송비 안내',
+      targeting:'25~45세. 얼리어답터·직구 관심층.',
+      retention:'Best Buy Totaltech 구독, 매장 연계',
+    }},
+
+  'gsmarena': { key:'tech', name:'GSMArena', domain:'gsmarena.com',
+    desc:'세계 최대 스마트폰 스펙 DB 및 리뷰 사이트. 구매 전 리서치 허브.',
+    cpc:{ google:{min:180,avg:420,max:1050}, naver:{min:144,avg:336,max:840}, meta:{min:91,avg:219,max:550}, kakao:{min:69,avg:165,max:415} },
+    why:'정보성 사이트로 광고 집행 적음. 스마트폰 구매 전 리서치 트래픽 집중.',
+    adStrategy:{
+      channels:['Google 디스플레이','앱 스토어'],
+      acquisition:'스마트폰 스펙 비교 콘텐츠로 자연 유입. SEO 의존도 매우 높음.',
+      creative:'스펙 비교 배너, 신제품 리뷰 알림',
+      targeting:'10~40대. 스마트폰 구매 전 리서치층.',
+      retention:'신제품 알림 구독, 비교 도구',
+    }},
+
+  'phonearena': { key:'tech', name:'PhoneArena', domain:'phonearena.com',
+    desc:'스마트폰 리뷰·비교·뉴스 전문 사이트.',
+    cpc:{ google:{min:170,avg:400,max:1000}, naver:{min:136,avg:320,max:800}, meta:{min:86,avg:207,max:520}, kakao:{min:65,avg:157,max:394} },
+    why:'GSMArena와 유사한 정보성 트래픽. 구매 의향 리서치 소비자 집중.',
+    adStrategy:{
+      channels:['Google 디스플레이'],
+      acquisition:'상세 리뷰·비교 콘텐츠로 자연 유입.',
+      creative:'리뷰 요약, 스마트폰 순위 배너',
+      targeting:'10~40대. 스마트폰 비교 연구층.',
+      retention:'뉴스레터 구독, 알림 서비스',
+    }},
+};
+
+function detectIndustry(url) {
+  // 전체 hostname 추출 (www. 제거)
+  const fullHost = url.toLowerCase().replace(/https?:\/\/(www\.)?/,'').split('/')[0];
+  // 첫 번째 서브도메인 (예: shop.coupang.com → coupang)
+  const parts = fullHost.split('.');
+  const subdomain = parts.slice(0, parts.length >= 3 ? parts.length - 2 : 1).join('.');
+  const domain = parts[0]; // 가장 첫 토큰
+
+  // 1) KNOWN_SITES domain 필드 직접 매칭 (정확한 도메인)
+  for (const [key, val] of Object.entries(KNOWN_SITES)) {
+    if (val.domain && fullHost.includes(val.domain.replace(/^www\./,''))) {
+      return { ...val, domain: fullHost, siteKey: key };
+    }
+  }
+
+  // 2) KNOWN_SITES 키 이름으로 매칭 (예: 'coupang' in 'coupang.com')
+  for (const [key, val] of Object.entries(KNOWN_SITES)) {
+    if (fullHost.includes(key)) return { ...val, domain: fullHost, siteKey: key };
+  }
+
+  // 3) 업종 패턴 매칭 (전체 hostname 기준)
+  for (const ind of INDUSTRY_MAP) {
+    for (const pat of ind.patterns) {
+      if (fullHost.includes(pat.toLowerCase())) {
+        return { key: ind.key, name: ind.name, domain: fullHost, desc: null };
+      }
+    }
+  }
+
+  // 4) 기본값: 이커머스
+  return { key: 'ecommerce', name: '이커머스/서비스', domain: fullHost, desc: null };
+}
+
+// 크롤링 데이터로 업종 보정
+function refineByCrawl(indKey, crawled) {
+  if (!crawled) return indKey;
+  const text = [crawled.title, crawled.description, crawled.keywords, crawled.h1s.join(' '), crawled.navTexts].join(' ').toLowerCase();
+
+  const signals = [
+    { key:'finance',     words:['대출','금리','보험','투자','펀드','예금','적금','카드','신용','계좌','금융','핀테크','증권','주식'] },
+    { key:'healthcare',  words:['병원','의원','클리닉','성형','피부과','치과','한의','의료','건강','헬스케어','약국','진료'] },
+    { key:'edu',         words:['강의','수강','학습','교육','클래스','수업','인강','온라인강좌','커리큘럼','자격증','학원'] },
+    { key:'travel',      words:['숙박','호텔','펜션','여행','항공','예약','투어','레저','리조트','관광'] },
+    { key:'food',        words:['배달','음식','식당','레스토랑','맛집','메뉴','주문','푸드','식품','새벽배송','신선'] },
+    { key:'fashion',     words:['패션','의류','옷','쇼핑몰','코디','스타일','브랜드','신상','아우터','티셔츠'] },
+    { key:'beauty',      words:['화장품','뷰티','스킨케어','메이크업','립','파운데이션','세럼','크림','선크림','코스메틱'] },
+    { key:'realestate',  words:['부동산','아파트','매물','분양','전세','월세','임대','토지','상가','중개'] },
+    { key:'auto',        words:['자동차','차량','렌터카','중고차','신차','자동차보험','카','모터','타이어','오일'] },
+    { key:'tech',        words:['saas','소프트웨어','솔루션','it','개발','api','플랫폼','서비스','클라우드','구독'] },
+    { key:'game',        words:['게임','플레이','캐릭터','아이템','레벨','모바일게임','앱게임','rpg'] },
+    { key:'ecommerce',   words:['쇼핑','구매','주문','배송','장바구니','결제','상품','할인','특가','이커머스'] },
+  ];
+
+  let best = indKey, bestScore = 0;
+  for (const s of signals) {
+    const score = s.words.filter(w => text.includes(w)).length;
+    if (score > bestScore) { bestScore = score; best = s.key; }
+  }
+  // 기존 도메인 감지 결과가 더 구체적이면 유지, 크롤링 신호가 3개 이상일 때만 덮어씀
+  return bestScore >= 3 ? best : indKey;
+}
+
+// 가격대로 CPC 배율 계산
+function priceMultiplier(avgPrice) {
+  if (!avgPrice) return 1;
+  if (avgPrice > 500000) return 1.6;  // 고가
+  if (avgPrice > 100000) return 1.3;
+  if (avgPrice > 30000)  return 1.1;
+  if (avgPrice < 5000)   return 0.8;  // 저가
+  return 1;
+}
+
+function buildResult(url, crawled) {
+  const detected = detectIndustry(url);
+  const refinedKey = refineByCrawl(detected.key, crawled);
+  const ind = INDUSTRY_MAP.find(i => i.key === refinedKey) || INDUSTRY_MAP.find(i => i.key === detected.key) || INDUSTRY_MAP[0];
+
+  // 사이트별 개별 CPC가 있으면 우선 사용, 없으면 업종 평균 + 가격 보정
+  const siteData = detected.siteKey ? KNOWN_SITES[detected.siteKey] : null;
+  const siteCpc  = siteData && siteData.cpc ? siteData.cpc : null;
+
+  const bm  = DATA.google.industries.find(i => i.key === ind.key);
+  const bmN = DATA.naver.industries.find(i => i.key === ind.key);
+  const bmM = DATA.meta.industries.find(i => i.key === ind.key);
+  const bmK = DATA.kakao.industries.find(i => i.key === ind.key);
+  const mult = (!siteCpc && crawled) ? priceMultiplier(crawled.avgPrice) : 1;
+  const pm   = curPeriodMult || 1;   // 선택된 기간 배율 반영
+
+  const gCpc  = Math.round((siteCpc ? siteCpc.google.avg : Math.round((bm  ? bm.cpc  : 800) * mult)) * pm);
+  const gMin  = Math.round((siteCpc ? siteCpc.google.min : Math.round(gCpc / pm * 0.5)) * pm);
+  const gMax  = Math.round((siteCpc ? siteCpc.google.max : Math.round(gCpc / pm * 1.8)) * pm);
+  const nCpc  = Math.round((siteCpc ? siteCpc.naver.avg  : Math.round((bmN ? bmN.cpc : 500) * mult)) * pm);
+  const nMin  = Math.round((siteCpc ? siteCpc.naver.min  : Math.round(nCpc / pm * 0.5)) * pm);
+  const nMax  = Math.round((siteCpc ? siteCpc.naver.max  : Math.round(nCpc / pm * 1.8)) * pm);
+  const mCpc  = Math.round((siteCpc ? siteCpc.meta.avg   : Math.round((bmM ? bmM.cpc : 400) * mult)) * pm);
+  const mMin  = Math.round((siteCpc ? siteCpc.meta.min   : Math.round(mCpc / pm * 0.5)) * pm);
+  const mMax  = Math.round((siteCpc ? siteCpc.meta.max   : Math.round(mCpc / pm * 1.8)) * pm);
+  const kCpc  = Math.round((siteCpc ? siteCpc.kakao.avg  : Math.round((bmK ? bmK.cpc : 350) * mult)) * pm);
+  const kMin  = Math.round((siteCpc ? siteCpc.kakao.min  : Math.round(kCpc / pm * 0.5)) * pm);
+  const kMax  = Math.round((siteCpc ? siteCpc.kakao.max  : Math.round(kCpc / pm * 1.8)) * pm);
+
+  const siteName = detected.name || (crawled && crawled.title ? crawled.title.split(/[|\-–]/)[0].trim() : detected.domain);
+  const desc = detected.desc || (siteData && siteData.desc) || (crawled && crawled.description) || `${siteName}은(는) ${ind.name} 분야의 온라인 서비스입니다.`;
+
+  // CPC 추정 근거: 알려진 사이트면 실측 기반, 모르면 업종 기반 설명 생성
+  const whyNote = (siteData && siteData.why)
+    ? siteData.why
+    : `${ind.name} 업종 평균 CPC 기준 추정값입니다. 경쟁도(${ind.comp}) 및 비즈니스 모델(${ind.model}) 반영. 실제 CPC는 키워드 품질점수·시즌·입찰 전략에 따라 ±30~50% 차이 가능.${crawled&&crawled.avgPrice?` 페이지 내 평균 단가 ₩${fmt(crawled.avgPrice)} 기반 보정 적용.`:''}`;
+
+  const dataSource = siteCpc ? '사이트별 개별 추정' : (crawled ? `크롤링 + 가격 보정${mult!==1?` ×${mult}`:''}` : '업종 패턴 기반');
+  const crawlNote = ` (${dataSource})`;
+
+  // 광고 전략: 알려진 사이트면 실측, 모르면 업종+사이트명 기반 자동 생성
+  const adStrat = (siteData && siteData.adStrategy) ? siteData.adStrategy : (() => {
+    const channelMap = {
+      finance:    ['네이버 파워링크','Google 검색광고','TV·유튜브 브랜딩','카카오 디스플레이'],
+      ecommerce:  ['네이버 쇼핑검색','Google 쇼핑(PLA)','Meta 카탈로그 DPA','카카오 모먼트'],
+      beauty:     ['인스타그램 릴스','유튜브 뷰티 채널','네이버 검색','카카오 모먼트'],
+      fashion:    ['인스타그램·틱톡 릴스','네이버 쇼핑검색','카카오 모먼트','유튜브'],
+      food:       ['네이버 검색','카카오 알림톡','인스타그램','앱 푸시'],
+      travel:     ['네이버 검색(여행 키워드)','Google 검색','인스타그램','유튜브 여행 채널'],
+      healthcare: ['네이버 검색(시술 키워드)','Google 검색','인스타그램(비포애프터)','카카오'],
+      edu:        ['Google 검색','네이버 검색','유튜브 인스트림','Meta 피드'],
+      tech:       ['Google 검색·디스플레이','LinkedIn(B2B)','유튜브','네이버 검색'],
+      realestate: ['네이버 부동산 검색','Google 검색','카카오 지도광고','TV·유튜브'],
+      auto:       ['TV·OTT','유튜브 자동차 채널','네이버 검색','Google 검색'],
+      game:       ['유튜브·트위치','Facebook/Instagram','구글 UAC','앱 스토어'],
+    };
+    const acqMap = {
+      finance:'브랜드 신뢰 콘텐츠 + 주요 금융 키워드 파워링크 집중. 신규 가입 혜택(금리·포인트)으로 전환 유도.',
+      ecommerce:'첫 구매 쿠폰 + 무료배송 혜택으로 신규 유입. 장바구니 이탈 리타겟팅으로 전환 회수.',
+      beauty:'인플루언서 리뷰 연계 + 비포애프터 소재. 시즌 세일 이벤트로 집중 유입.',
+      fashion:'룩북·스타일링 비주얼 콘텐츠. 신상 입고 알림 + 인플루언서 착용컷으로 MZ 유입.',
+      food:'시간대(점심·저녁) 집중 타겟팅. 지역 기반 광고 + 첫 주문 쿠폰.',
+      travel:'시즌 전 선점 광고(6~8주 전). 여행지·숙소 키워드 + 감성 영상 소재.',
+      healthcare:'지역+시술명 키워드 조합. 실후기 콘텐츠 신뢰 확보 → 상담 예약 전환.',
+      edu:'무료 강의/체험 CTA → 유료 전환 퍼널. 수강 후기·수료 결과물로 신뢰 구축.',
+      tech:'무료 체험판·데모 CTA. B2B는 LinkedIn+리드 광고. SEO 콘텐츠 병행.',
+      realestate:'지역+단지명 키워드. 아파트 시세·청약 정보 콘텐츠로 자연 유입.',
+      auto:'신차 출시 이벤트·시승 신청 CTA. 차량 리뷰 유튜브 채널 연계.',
+      game:'신규 시즌·업데이트 이벤트 집중. 스트리머 협찬 + UAC(앱 설치 최적화).',
+    };
+    const retMap = {
+      finance:'금융 상품 교차판매. 포인트·리워드 프로그램.',
+      ecommerce:'멤버십 구독. 찜 목록 할인 알림. 재구매 쿠폰.',
+      beauty:'등급제 포인트. 신제품 출시 알림. 구독 샘플박스.',
+      fashion:'포인트 적립. 신상 알림. 한정판 드롭 예고.',
+      food:'구독 서비스. 단골 혜택. 앱 푸시 시간대 최적화.',
+      travel:'등급제 혜택. 재예약 쿠폰. 찜 숙소 특가 알림.',
+      healthcare:'예약 리마인더. 리뷰 리워드. 정기 관리 패키지.',
+      edu:'학습 스트릭·수료증. 커리큘럼 로드맵. 재수강 할인.',
+      tech:'기술 지원 SLA. 업데이트 자동화. 커뮤니티 연동.',
+      realestate:'매물 알림 설정. 관심 단지 시세 알림.',
+      auto:'커넥티드카 앱. 멤버십. 정기 점검 알림.',
+      game:'배틀패스. 신규 콘텐츠 업데이트. 토너먼트 이벤트.',
+    };
+    const k = ind.key;
+    return {
+      channels: channelMap[k] || ['네이버 검색','Google 검색','Meta 피드','카카오 모먼트'],
+      acquisition: acqMap[k] || `${ind.target}을 대상으로 검색 의향 키워드 중심 광고 집행.`,
+      creative: `${ind.name} 업종 특성 소재 — 경쟁도 ${ind.comp} 환경. 품질점수 최적화·A/B 테스트 필수.`,
+      targeting: ind.target,
+      retention: retMap[k] || '리타겟팅 광고 + 재방문 유인 혜택 병행 권장.',
+    };
+  })();
+
+  return {
+    site_name: siteName,
+    emoji: ind.emoji,
+    industry: ind.name,
+    description: desc,
+    target_audience: ind.target,
+    business_model: ind.model,
+    competition_level: ind.comp,
+    tags: ind.tags,
+    crawled: !!crawled,
+    crawl_info: crawled ? { title: crawled.title, avgPrice: crawled.avgPrice, maxPrice: crawled.maxPrice, keywords: crawled.keywords } : null,
+    platforms: {
+      google: { cpc_min: gMin, cpc_max: gMax, cpc_avg: gCpc, difficulty: Math.min(5, Math.ceil(gCpc/1000)+1), ctr_avg: bm ? bm.ctr+'%' : '3.5%', note: `Google 검색광고${crawlNote}` },
+      meta:   { cpc_min: mMin, cpc_max: mMax, cpc_avg: mCpc, difficulty: Math.min(5, Math.ceil(mCpc/600)+1),  ctr_avg: bmM ? bmM.ctr+'%' : '1.5%', note: `Meta 피드/스토리 광고${crawlNote}` },
+      kakao:  { cpc_min: kMin, cpc_max: kMax, cpc_avg: kCpc, difficulty: Math.min(5, Math.ceil(kCpc/450)+1),  ctr_avg: bmK ? bmK.ctr+'%' : '2.0%', note: `카카오 모먼트${crawlNote}` },
+      naver:  { cpc_min: nMin, cpc_max: nMax, cpc_avg: nCpc, difficulty: Math.min(5, Math.ceil(nCpc/800)+1),  ctr_avg: bmN ? bmN.ctr+'%' : '3.0%', note: `네이버 성과형${crawlNote}` },
+    },
+    why_note: whyNote,
+    ad_strategy: adStrat,
+    keywords: ind.kws.map(([keyword,cpc,volume]) => ({ keyword, cpc: Math.round(cpc*mult*pm), volume })),
+    insights: ind.ins,
+    period_label: document.getElementById('periodLabel')?.textContent || '',
+    period_mult: pm,
+    monthly_budget_suggest: { min: Math.round(ind.budget.min*pm), recommended: Math.round(ind.budget.rec*pm), reason: `${ind.name} 업종 평균 집행 예산 기준 (플랫폼 2개 이상 운영 권장)` }
+  };
+}
+
+async function runAnalysis(){
+  const url=document.getElementById('urlInput').value.trim();
+  if(!url)return;
+  const btn=document.getElementById('analyzeBtn'),ld=document.getElementById('loadingState'),res=document.getElementById('resultWrap'),err=document.getElementById('errorBox');
+  btn.disabled=true;ld.style.display='block';res.style.display='none';err.style.display='none';
+  document.getElementById('loadingUrl').textContent=url;
+
+  let crawled=null;
+  // 서버가 켜져 있으면 실제 크롤링 시도
+  try{
+    const r=await fetch('http://localhost:3000/api/crawl',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url}),signal:AbortSignal.timeout(10000)});
+    if(r.ok) crawled=await r.json();
+  }catch(e){ /* 서버 꺼져 있으면 패턴 매칭으로 폴백 */ }
+
+  try{
+    _lastAnalyzedUrl = url;
+    _lastCrawledData = crawled;
+    const parsed = buildResult(url, crawled);
+    ld.style.display='none';btn.disabled=false;
+    renderResult(parsed,url,crawled);
+  }catch(e){
+    ld.style.display='none';btn.disabled=false;
+    err.style.display='block';
+    err.textContent='⚠ '+e.message;
+  }
+}
+
+function renderResult(d,inputUrl){
+  const wrap=document.getElementById('resultWrap');
+  const pm={google:{label:'Google Ads',color:'#4f8eff'},meta:{label:'Meta Ads',color:'#10b981'},kakao:{label:'카카오 모먼트',color:'#f59e0b'},naver:{label:'네이버 성과형',color:'#ef4444'}};
+  const ii={opportunity:'✦',warning:'⚠',tip:'◎'};
+  const ic={opportunity:'var(--good)',warning:'var(--warn)',tip:'var(--accent)'};
+  const gmax=Math.max(...Object.values(d.platforms).map(p=>p.cpc_avg));
+  const vc={'높음':'var(--bad)','보통':'var(--warn)','낮음':'var(--good)'};
+  let platHtml='';
+  for(const[key,p]of Object.entries(d.platforms)){
+    if(!pm[key])continue;
+    const c=pm[key],pct=Math.round(p.cpc_avg/gmax*100);
+    const dots=Array.from({length:5},(_,i)=>`<div class="diff-dot ${i<p.difficulty?'on':''}"></div>`).join('');
+    platHtml+=`<div class="plat-card"><div class="plat-name"><div class="plat-dot" style="background:${c.color}"></div>${c.label}</div><div class="cpc-range">₩${fmt(p.cpc_min)} ~ ₩${fmt(p.cpc_max)}</div><div class="cpc-sub">평균 ₩${fmt(p.cpc_avg)} · CTR ${p.ctr_avg}</div><div class="bar-bg"><div class="bar-fill" style="width:0%;background:${c.color}" data-w="${pct}"></div></div><div class="diff-row"><span class="diff-lbl">${p.note}</span><div class="diff-dots">${dots}</div></div></div>`;
+  }
+  const kwHtml=d.keywords.map(k=>`<div class="kw-item">${k.keyword}<span class="kw-cpc">₩${fmt(k.cpc)}</span><span class="kw-vol" style="color:${vc[k.volume]||'var(--muted)'}">${k.volume}</span></div>`).join('');
+  const insHtml=d.insights.map(i=>`<div class="ins-item"><div class="ins-ico" style="color:${ic[i.type]}">${ii[i.type]}</div><div><div class="ins-ttl">${i.title}</div><div class="ins-bod">${i.body}</div></div></div>`).join('');
+  wrap.innerHTML=`
+    <div class="site-hdr"><div class="site-emo">${d.emoji||'🌐'}</div><div style="flex:1"><div class="site-name">${d.site_name}</div><div class="site-url">${inputUrl}</div><div class="site-desc">${d.description}</div><div class="badge-row"><span class="badge b-teal">${d.industry}</span><span class="badge b-blue">${d.business_model}</span><span class="badge b-amber">경쟁도 ${d.competition_level}</span>${(d.tags||[]).map(t=>`<span class="badge b-gray">${t}</span>`).join('')}<span class="badge" style="background:${d.crawled?'#eaf7f1':'var(--main-bg)'};color:${d.crawled?'var(--good)':'var(--muted)'}">${d.crawled?'실제 크롤링':'패턴 추정'}</span></div>${d.crawled&&d.crawl_info?`<div style="font-size:11px;color:var(--muted);margin-top:7px;display:flex;gap:14px;flex-wrap:wrap">${d.crawl_info.title?`<span>${d.crawl_info.title.slice(0,40)}</span>`:''}${d.crawl_info.avgPrice?`<span>평균가 ₩${fmt(d.crawl_info.avgPrice)}</span>`:''}${d.crawl_info.maxPrice?`<span>최고가 ₩${fmt(d.crawl_info.maxPrice)}</span>`:''}</div>`:''}
+    </div></div>
+    ${(()=>{
+      const pm=d.period_mult||1, lbl=d.period_label||'';
+      if(!lbl&&pm===1)return '';
+      const pct=Math.round((pm-1)*100);
+      const pctTxt=pct===0?'기준값':(pct>0?`+${pct}%`:`${pct}%`);
+      const col=pct>0?'var(--bad)':pct<0?'var(--good)':'var(--muted)';
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
+        <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px">기간</span>
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${lbl}</span>
+        <span style="margin-left:auto;font-size:12px;font-weight:700;color:${col}">${pctTxt}</span>
+      </div>`;
+    })()}
+    <div class="sec-label">플랫폼별 예상 CPC</div>
+    <div class="plat-grid mb16">${platHtml}</div>
+    <div class="sec-label">추천 키워드 & 예상 CPC</div>
+    <div class="kw-wrap mb16"><div class="kw-list">${kwHtml}</div></div>
+    ${d.why_note?`<div class="sec-label">CPC 추정 근거</div><div style="background:#f8fafc;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r-sm);padding:13px 16px;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px">${d.why_note}</div>`:''}
+    ${d.ad_strategy ? `
+    <div class="sec-label">광고 전략 분석</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="card" style="padding:18px 20px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">주요 광고 채널</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${d.ad_strategy.channels.map(c=>`<span style="background:var(--accent-light);color:var(--accent);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:500">${c}</span>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="padding:18px 20px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">타겟 고객</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.65">${d.ad_strategy.targeting}</div>
+      </div>
+      <div class="card" style="padding:18px 20px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">고객 유입 방식</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.65">${d.ad_strategy.acquisition}</div>
+      </div>
+      <div class="card" style="padding:18px 20px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">광고 소재 유형</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.65;margin-bottom:10px">${d.ad_strategy.creative}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;margin-top:4px">리텐션 전략</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">${d.ad_strategy.retention}</div>
+      </div>
+    </div>` : ''}
+    <div class="sec-label">광고 인사이트</div>
+    <div class="ins-list mb16">${insHtml}</div>
+    <div class="sec-label">월 광고비 추천</div>
+    <div class="budget-card">
+      <div class="budget-row"><span class="budget-lbl">최소 예산</span><span class="budget-val" style="color:var(--muted)">월 ${fmt(d.monthly_budget_suggest.min)}만원</span></div>
+      <div class="budget-row"><span class="budget-lbl">추천 예산</span><span class="budget-val" style="color:var(--accent)">월 ${fmt(d.monthly_budget_suggest.recommended)}만원</span></div>
+      <div class="budget-row" style="border-bottom:none"><span class="budget-lbl" style="font-size:12px;color:var(--muted)">${d.monthly_budget_suggest.reason}</span></div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">← 다른 사이트 분석하기</button>`;
+  wrap.style.display='block';
+  setTimeout(()=>{wrap.querySelectorAll('.bar-fill[data-w]').forEach(el=>setTimeout(()=>{el.style.width=el.dataset.w+'%';},50));},100);
+}
+
+function resetAll(){
+  document.getElementById('resultWrap').style.display='none';
+  document.getElementById('errorBox').style.display='none';
+  document.getElementById('urlInput').value='';
+  document.getElementById('urlInput').focus();
+}
+
+renderBenchmark();
+
+// ── 캠페인 전략 데이터 ──
+// 각 사이트별 플랫폼별 주요 광고 집행 유형·이벤트 정리
+// 출처: 각 사이트 공개 광고 사례, 광고업계 공개 리포트, 업종 특성 기반 추정
+const PLATFORM_FOCUS = {
+  coupang: {
+    google: {
+      types:['Performance Max','Google 쇼핑(PLA)','검색광고','YouTube 프리롤'],
+      campaigns:['전 카테고리 쇼핑광고 상시 집행','로켓와우 멤버십 앱 설치(UAC)','블랙프라이데이 Performance Max 집중','시즌 특가 반응형 검색광고(RSA)'],
+      budget:'연간 광고비 중 Google 약 25~30% 비중 추정. 쇼핑광고 ROAS 목표 집중.'
+    },
+    naver: {
+      types:['파워링크 검색광고','쇼핑검색광고','성과형 디스플레이','브랜드 검색'],
+      campaigns:['카테고리별 쇼핑검색 상시 집행','로켓배송 키워드 파워링크','시즌 쇼핑 기획전 검색 집중','브랜드 검색 광고 상시 운영'],
+      budget:'국내 플랫폼 중 가장 높은 비중 추정. 쇼핑검색 입찰 경쟁이 치열.'
+    },
+    meta: {
+      types:['카탈로그 DPA(동적 상품광고)','리타겟팅','인스타그램 쇼핑'],
+      campaigns:['장바구니 이탈 리타겟팅(전환 최적화)','신상품 동적 카탈로그','시즌 할인 릴스 광고','로켓와우 앱 설치 캠페인'],
+      budget:'리타겟팅 중심. 신규 유입보다 이탈 재유입에 집중.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','알림톡','카카오 채널'],
+      campaigns:['주문 확인·배송 알림톡 자동화','쿠폰 발급 채널 메시지','비즈보드 브랜드 인지도','시즌 이벤트 카카오톡 광고'],
+      budget:'알림톡은 리텐션·재구매 중심. 비즈보드는 신규 인지도.'
+    }
+  },
+  toss: {
+    google: {
+      types:['검색광고(브랜드+경쟁)','Performance Max','YouTube 프리롤'],
+      campaigns:['대출·투자·보험 키워드 검색광고','경쟁사 브랜드 키워드 입찰','유튜브 금융 콘텐츠 프리롤','앱 설치 UAC 캠페인'],
+      budget:'금융 업종 최고 CPC. 연간 수백억원 추정. 브랜드 인지도+성과 혼합.'
+    },
+    naver: {
+      types:['파워링크(대출·보험·투자)','성과형 디스플레이','브랜드 검색'],
+      campaigns:['대출 비교 파워링크 최상위 입찰','보험 키워드 상시 집행','토스 브랜드 검색 광고','금융 목표 설정 성과형 디스플레이'],
+      budget:'대출·보험 파워링크 CPC 5,000~30,000원. 국내 최고 단가 카테고리.'
+    },
+    meta: {
+      types:['금융 리드 광고(Lead Ads)','앱 설치','리타겟팅'],
+      campaigns:['투자 첫 시작 앱 설치 캠페인','보험 가입 리드 광고','대출 한도 조회 유도 광고','친구 초대 바이럴 캠페인'],
+      budget:'리드 광고로 잠재 금융 고객 발굴. CTR은 낮지만 전환 단가 최적화 집중.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','카카오페이 연동 광고','알림톡'],
+      campaigns:['카카오 생태계 내 금융 상품 노출','토스증권 투자 유도 알림','토스 포인트 리워드 메시지','카카오페이 vs 토스 경쟁 키워드'],
+      budget:'카카오 생태계와 직접 경쟁하면서도 광고 집행. 모먼트 광고 비중 낮음.'
+    }
+  },
+  baemin: {
+    google: {
+      types:['앱 설치(UAC)','Performance Max','지역 검색광고'],
+      campaigns:['배민 앱 설치 자동화(UAC) 상시','B마트 신선식품 지역 광고','배민1 빠른배달 검색광고','프랜차이즈 파트너 광고 지원'],
+      budget:'앱 설치 중심. 지역 타겟팅으로 비용 효율화. UAC가 메인 채널.'
+    },
+    naver: {
+      types:['브랜드 검색','지역 키워드','성과형 디스플레이'],
+      campaigns:['배달의민족 브랜드 파워링크','음식 카테고리 검색광고','B마트 신선식품 쇼핑검색','지역 음식점 카테고리 광고'],
+      budget:'검색 의도(배달 음식 찾기)에 맞춰 파워링크 + 쇼핑검색 집행.'
+    },
+    meta: {
+      types:['앱 재설치 리타겟팅','동영상 광고','인스타그램 피드'],
+      campaigns:['이탈 사용자 재활성화 캠페인','치킨·피자 시즐 영상 광고','새벽 배달(B마트) 인스타그램 광고','배민클럽 가입 유도 광고'],
+      budget:'B급 감성 크리에이티브로 차별화. 동영상 광고 선호.'
+    },
+    kakao: {
+      types:['카카오 알림톡','비즈보드','채널 메시지'],
+      campaigns:['주문 완료·배달 현황 알림톡','단골 가게 신메뉴 알림','쿠폰 발급 채널 메시지','배민클럽 혜택 알림'],
+      budget:'알림톡으로 주문 전환·재주문 유도. 알림톡 CPC 대비 ROI 높음.'
+    }
+  },
+  musinsa: {
+    google: {
+      types:['쇼핑광고(PLA)','브랜드 검색','YouTube 패션 광고'],
+      campaigns:['무신사 스탠다드 자체 브랜드 광고','시즌 세일 쇼핑광고','패션 유튜버 연계 브랜딩','무신사 우먼 별도 캠페인'],
+      budget:'패션 업종 쇼핑광고 + 유튜브 브랜딩 혼합. 스탠다드 자체 브랜드 강조.'
+    },
+    naver: {
+      types:['쇼핑검색광고','브랜드 검색','성과형 디스플레이'],
+      campaigns:['패션 키워드 쇼핑검색 상시','무신사 브랜드 검색 광고','시즌 컬렉션 성과형 디스플레이','인플루언서 협찬 콘텐츠 쇼핑검색 연동'],
+      budget:'네이버 쇼핑검색이 핵심. 스트릿 패션 키워드 집중 입찰.'
+    },
+    meta: {
+      types:['인스타그램 쇼핑','릴스 광고','카탈로그 DPA'],
+      campaigns:['OOTD 릴스 광고','인플루언서 착용컷 협찬+광고 전환','한정판 드롭 예고 릴스','무신사 우먼 여성 타겟 피드 광고'],
+      budget:'인스타그램이 패션 핵심 채널. 릴스 + 쇼핑 연동 광고 비중 높음.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','채널 메시지'],
+      campaigns:['무신사 포인트 소멸 알림 메시지','시즌 세일 채널 메시지','신규 가입 비즈보드 광고','등급 업그레이드 리워드 알림'],
+      budget:'카카오는 리텐션 목적 주로 활용. 채널 메시지로 재구매 유도.'
+    }
+  },
+  yanolja: {
+    google: {
+      types:['검색광고','Performance Max','YouTube 광고'],
+      campaigns:['호텔·펜션 키워드 검색광고','시즌 특가 Performance Max','TV급 YouTube 브랜딩 광고','해외여행 패키지 검색광고'],
+      budget:'여행 성수기(7~8월, 연휴) 예산 집중. 비성수기에는 축소.'
+    },
+    naver: {
+      types:['파워링크','쇼핑검색(숙박)','성과형 디스플레이'],
+      campaigns:['숙박·호텔 파워링크 상시 집행','지역별 여행 검색광고','야놀자 특가 성과형 디스플레이','브랜드 검색광고 상시'],
+      budget:'숙박 검색 니즈가 네이버에 집중. 시즌 CPC 2배 이상 상승 시 예산 확대.'
+    },
+    meta: {
+      types:['여행 광고(동적)','인스타그램 피드·릴스','리타겟팅'],
+      campaigns:['여행 감성 릴스 광고','조회 이탈 숙소 리타겟팅','커플·가족 여행 타겟 광고','시즌 프로모션 슬라이드 광고'],
+      budget:'여행 감성 크리에이티브 강점. 인스타그램 여행 관심사 타겟 집중.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','알림톡','채널 메시지'],
+      campaigns:['예약 확인·체크인 알림톡','특가 숙소 채널 메시지','야놀자 클럽 혜택 알림','지역 관광 비즈보드 광고'],
+      budget:'알림톡으로 예약 전환 및 체크인 안내. 클럽 등급 유지 메시지.'
+    }
+  },
+  kakaobank: {
+    google: {
+      types:['검색광고(대출·예금)','Performance Max','YouTube 광고'],
+      campaigns:['대출 한도 조회 검색광고','예금 금리 비교 검색광고','카카오뱅크 카드 발급 광고','유튜브 금융 교육 콘텐츠 연계'],
+      budget:'대출·예금 키워드 최고 CPC 구간. 구글 검색 비중 높음.'
+    },
+    naver: {
+      types:['파워링크(대출·예금)','브랜드 검색','성과형 디스플레이'],
+      campaigns:['주택담보대출 파워링크','26주적금 브랜드 검색','예금 금리 비교 성과형 광고','카카오뱅크 카드 쇼핑검색 연동'],
+      budget:'대출 파워링크 CPC 5,000~20,000원. 고단가 집중 집행.'
+    },
+    meta: {
+      types:['리드 광고','앱 설치','동영상 광고'],
+      campaigns:['26주적금 챌린지 SNS 광고','대출 한도 조회 리드 광고','앱 설치 캠페인(카카오 계정 연동 강조)','금리 비교 슬라이드 광고'],
+      budget:'리드 광고로 잠재 금융 고객 확보. 26주적금 챌린지 바이럴 활용.'
+    },
+    kakao: {
+      types:['카카오톡 채널','알림톡','카카오 광고 플랫폼'],
+      campaigns:['카카오톡 계정으로 1분 계좌개설 유도','입출금 알림톡 자동화','카카오페이 연동 프로모션','카카오쇼핑 연계 혜택 메시지'],
+      budget:'카카오 생태계 최강 우위. 카카오톡 5,000만 사용자 직접 도달 가능.'
+    }
+  },
+  gangnamunni: {
+    google: {
+      types:['검색광고(성형·피부과)','Performance Max'],
+      campaigns:['성형외과 키워드 검색광고(쌍꺼풀·코·지방흡입)','피부과 키워드 검색광고','강남언니 브랜드 검색광고','앱 설치 UAC 캠페인'],
+      budget:'성형 검색 CPC 5,000~30,000원. 의료업 최고 단가. 브랜드 광고로 병원 직접 입찰 방어.'
+    },
+    naver: {
+      types:['파워링크(성형·피부과)','성과형 디스플레이','브랜드 검색'],
+      campaigns:['쌍꺼풀·코성형 파워링크 최상위','피부과 레이저 키워드 집중','강남언니 브랜드 상시 집행','지역(강남) + 시술 키워드 결합 광고'],
+      budget:'성형 파워링크 3,000~20,000원. 병원이 직접 입찰해 플랫폼 vs 병원 경쟁 구조 형성.'
+    },
+    meta: {
+      types:['인스타그램 피드·릴스','비포애프터 광고','틱톡'],
+      campaigns:['실제 시술 후기 비포애프터 릴스','의사 인터뷰 콘텐츠 광고','이벤트 프로모션(리프팅·보톡스)','20대 여성 뷰티 관심사 타겟 피드'],
+      budget:'비포애프터 크리에이티브가 핵심. 인스타그램이 주요 전환 채널.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','알림톡','채널 메시지'],
+      campaigns:['예약 확인 알림톡','이벤트 종료 전 리마인더','즐겨찾기 병원 신메뉴 알림','리뷰 작성 요청 메시지'],
+      budget:'알림톡으로 예약 관리 및 리뷰 유도. 비즈보드로 30~40대 여성 노출.'
+    }
+  },
+  oliveyoung: {
+    google: {
+      types:['쇼핑광고(PLA)','Performance Max','YouTube 뷰티 채널'],
+      campaigns:['뷰티 제품 쇼핑광고 상시 집행','시즌 세일(올리브영 세일) Performance Max','유튜브 뷰티 유튜버 연계 광고','성분·효능 키워드 검색광고'],
+      budget:'쇼핑광고 ROAS 집중. 세일 기간(연 4회) 예산 집중 집행.'
+    },
+    naver: {
+      types:['쇼핑검색광고','파워링크','브랜드 검색','스마트스토어'],
+      campaigns:['뷰티 성분 키워드 쇼핑검색','올리브영 브랜드 검색상시','시즌 기획전 쇼핑검색 집중','성분별·피부타입별 키워드 광고'],
+      budget:'네이버 쇼핑 검색이 뷰티 카테고리 최대 채널. 올영세일 시 예산 집중.'
+    },
+    meta: {
+      types:['인스타그램 뷰티 광고','카탈로그 DPA','릴스'],
+      campaigns:['신상품 론칭 릴스 광고','뷰티 루틴 콘텐츠 광고','시즌 세일 카탈로그 동적 광고','피부타입별 타겟 제품 추천 광고'],
+      budget:'인스타그램 뷰티 관심사 타겟 핵심. 뷰티 인플루언서 협찬+광고 전환.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','채널 메시지','알림톡'],
+      campaigns:['올영세일 D-Day 카운트다운 메시지','멤버십 등급 혜택 알림','신상품 입고 채널 메시지','생일 쿠폰 발급 자동화'],
+      budget:'채널 메시지로 재구매 유도. 생일 등 개인화 메시지 CTR 높음.'
+    }
+  },
+  kurly: {
+    google: {
+      types:['검색광고','Performance Max','YouTube'],
+      campaigns:['새벽배송 키워드 검색광고','프리미엄 신선식품 Performance Max','마켓컬리 브랜드 유튜브 광고','컬리패스 구독 유도 광고'],
+      budget:'브랜드 인지도 + 전환 혼합. 새벽배송 키워드 집중.'
+    },
+    naver: {
+      types:['쇼핑검색광고','파워링크','성과형 디스플레이'],
+      campaigns:['신선식품 쇼핑검색(새벽배송)','컬리패스 구독 파워링크','프리미엄 식재료 키워드 광고','브랜드 검색 상시'],
+      budget:'신선식품 쇼핑검색 집중. SSG·오아시스 등과 동일 키워드 경쟁.'
+    },
+    meta: {
+      types:['인스타그램 푸드 광고','카탈로그','릴스'],
+      campaigns:['신선 식재료 근접 촬영 릴스','셰프 레시피 연계 광고','첫 구매 무료배송 유도 광고','프리미엄 한우·수산물 카탈로그 광고'],
+      budget:'식품 비주얼 크리에이티브 강점. 인스타그램 30~40대 여성 타겟.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','알림톡','채널 메시지'],
+      campaigns:['정기배송 상품 리마인더 알림톡','컬리패스 혜택 채널 메시지','이탈 고객 재구매 쿠폰 메시지','마이컬리 등급 혜택 알림'],
+      budget:'알림톡으로 정기배송·재구매 집중 유도.'
+    }
+  },
+  class101: {
+    google: {
+      types:['검색광고','앱 설치','YouTube'],
+      campaigns:['취미 클래스 키워드 검색광고','클래스101+ 구독 유도 광고','유튜브 강사 소개 광고','크리에이터 클래스 검색광고'],
+      budget:'교육 카테고리 검색광고 중심. 구독 전환 최적화.'
+    },
+    naver: {
+      types:['파워링크','성과형 디스플레이','브랜드 검색'],
+      campaigns:['취미·자기계발 클래스 파워링크','클래스101+ 구독 성과형 광고','드로잉·음악·요리 키워드 집중','브랜드 검색 상시'],
+      budget:'취미 키워드 CPC 낮음. 볼륨 집행으로 전환 확보.'
+    },
+    meta: {
+      types:['인스타그램 릴스','동영상 광고','카탈로그'],
+      campaigns:['강사 클래스 미리보기 릴스','수강생 완성 작품 쇼케이스 광고','셀럽 강사 협찬 릴스 광고','구독 무료체험 광고'],
+      budget:'인스타그램 취미 관심사 타겟. 릴스 완성작 공유 바이럴 활용.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','채널 메시지'],
+      campaigns:['클래스 할인 쿠폰 메시지','수강 중 강의 리마인더 알림','신규 강사 오픈 알림','포인트 소멸 안내 메시지'],
+      budget:'채널 메시지로 이탈 방지 및 구독 갱신 유도.'
+    }
+  },
+  wanted: {
+    google: {
+      types:['검색광고(채용)','Performance Max','LinkedIn(B2B)'],
+      campaigns:['직무별 채용 키워드 검색광고','기업 채용공고 브랜드 광고','IT·개발 직군 집중 검색광고','글로벌 채용 Google 광고'],
+      budget:'채용 플랫폼 경쟁(사람인·잡코리아·링크드인). 개발 직군 CPC 높음.'
+    },
+    naver: {
+      types:['파워링크(취업·이직)','성과형 디스플레이','브랜드 검색'],
+      campaigns:['이직·취업 파워링크 상시 집행','원티드 브랜드 검색광고','IT 개발 직군 키워드 집중','스타트업 채용 키워드 광고'],
+      budget:'취업 검색 1위 채널. 연봉 협상 시즌(상반기·하반기) 예산 집중.'
+    },
+    meta: {
+      types:['LinkedIn 연동','인스타그램 채용 광고','동영상'],
+      campaigns:['이직 성공 사례 스토리 광고','회사 문화 소개 릴스','연봉 협상 팁 콘텐츠 광고','원티드 앱 설치 광고'],
+      budget:'20~35세 직장인 타겟. 이직 욕구 자극 크리에이티브.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','채널 메시지'],
+      campaigns:['지원 현황 알림톡','서류 합격 축하 메시지','면접 일정 리마인더 알림','새 공고 오픈 채널 메시지'],
+      budget:'구직 여정 전반에 걸쳐 알림톡 자동화 집중.'
+    }
+  },
+  daangn: {
+    google: {
+      types:['앱 설치(UAC)','Performance Max','로컬 광고'],
+      campaigns:['당근 앱 설치 UAC 상시 집행','지역 중고거래 검색광고','당근페이 연동 광고','동네 생활 서비스 광고'],
+      budget:'앱 설치 중심. 지역 타겟팅 광고 특화.'
+    },
+    naver: {
+      types:['파워링크(중고거래)','지역 광고','브랜드 검색'],
+      campaigns:['중고거래·당근마켓 브랜드 파워링크','지역 생활 서비스 키워드 광고','당근 브랜드 검색 상시 집행'],
+      budget:'중고거래 검색 니즈 포착. CPC 상대적 낮음.'
+    },
+    meta: {
+      types:['인스타그램','동영상 광고','지역 타겟'],
+      campaigns:['동네 이웃 감성 브랜드 광고','중고거래 성공 스토리 릴스','당근페이 신뢰 광고','생활밀착형 동네 광고'],
+      budget:'지역 타겟팅 + 따뜻한 감성 크리에이티브. CTR 높음.'
+    },
+    kakao: {
+      types:['카카오 비즈보드','알림톡'],
+      campaigns:['채팅 알림 자동화','관심 상품 등록 리마인더','당근페이 이체 확인 알림톡','동네 인기 게시물 알림'],
+      budget:'알림톡 위주. 서비스 내 알림 중심 운영.'
+    }
+  }
+};
+
+// ── 사이트별 이벤트 히스토리 데이터 ──
+// 주요 마케팅 이벤트, 캠페인 집행 시기, 플랫폼, 규모, 성과 추정
+const EVENTS = [
+  // 쿠팡
+  { site:'coupang', name:'쿠팡 블랙프라이데이', period:'2024-11-22~11-29', year:2024, platforms:['google','naver','meta','kakao','tv'], type:'시즌 세일', desc:'전 카테고리 최대 50~70% 할인. Google 쇼핑광고+Naver 쇼핑검색 집중. 로켓와우 신규 유입 최대 시즌.', impact:'high' },
+  { site:'coupang', name:'로켓와우 멤버십 캠페인', period:'2024-03~04', year:2024, platforms:['google','tv','meta'], type:'멤버십 획득', desc:'로켓와우 월구독 49% 인상 전후 신규 가입자 유치 집중. TV+유튜브 대규모 브랜딩+성과 광고 병행.', impact:'high' },
+  { site:'coupang', name:'로켓직구 글로벌 캠페인', period:'2024-06~08', year:2024, platforms:['google','meta','naver'], type:'서비스 론칭', desc:'해외 직구 서비스 로켓직구 확장. 해외 상품 키워드 검색광고+쇼핑광고 집중. 해외 배송 속도 강조 크리에이티브.', impact:'mid' },
+  { site:'coupang', name:'쿠팡이츠 배달 캠페인', period:'2025-01~03', year:2025, platforms:['meta','kakao','google'], type:'앱 설치', desc:'쿠팡이츠 배달 서비스 확장 캠페인. 배민 대항 신규 지역 확대. 앱 설치 UAC 집중.', impact:'mid' },
+  { site:'coupang', name:'2025 블랙프라이데이', period:'2025-11-21~11-28', year:2025, platforms:['google','naver','meta','kakao','tv'], type:'시즌 세일', desc:'전년 대비 예산 규모 약 15% 증가 추정. 로켓배송 당일 배송 강조. Performance Max 집중.', impact:'high' },
+  { site:'coupang', name:'로켓와우 2026 스프링', period:'2026-03~05', year:2026, platforms:['google','naver','meta','tv'], type:'멤버십 확대', desc:'2026년 봄 멤버십 혜택 확대 캠페인. AI 개인화 추천 기능 런칭 연계. Performance Max + 브랜딩 병행.', impact:'mid' },
+
+  // 토스
+  { site:'toss', name:'토스 대출 비교 캠페인', period:'2024-01~03', year:2024, platforms:['naver','google','tv'], type:'금융 상품', desc:'연초 재테크 붐 타겟. 대출 한도 조회+금리 비교 키워드 파워링크 최상위 입찰. 금융 업종 최고 CPC 집행.', impact:'high' },
+  { site:'toss', name:'토스증권 주식 이벤트', period:'2024-04~06', year:2024, platforms:['meta','google','kakao'], type:'금융 상품', desc:'주식 투자 첫 시작 이벤트. 주식 무료 지급 프로모션으로 신규 유입. 20~35세 투자 관심층 타겟.', impact:'high' },
+  { site:'toss', name:'토스 보험 비교 론칭', period:'2024-09~11', year:2024, platforms:['naver','google','tv','meta'], type:'서비스 론칭', desc:'보험 비교 서비스 론칭 대규모 캠페인. 보험 파워링크 진입. TV+유튜브 브랜딩 집중.', impact:'high' },
+  { site:'toss', name:'토스뱅크 예금 금리 캠페인', period:'2025-02~04', year:2025, platforms:['naver','google','kakao'], type:'금융 상품', desc:'고금리 예금 상품 경쟁. 카카오뱅크·케이뱅크 대항 금리 비교 검색광고 집중.', impact:'mid' },
+  { site:'toss', name:'토스 2025 연말 절세 캠페인', period:'2025-11~12', year:2025, platforms:['naver','google','meta','tv'], type:'금융 상품', desc:'ISA·IRP 연말 세금 절세 상품 광고. 연말정산 키워드 집중 집행. 절세 관심 30~50대 타겟.', impact:'high' },
+
+  // 배달의민족
+  { site:'baemin', name:'배민1 플러스 론칭', period:'2024-03~05', year:2024, platforms:['tv','meta','google','kakao'], type:'서비스 론칭', desc:'배민1 플러스 단건 배달 확장. TV+유튜브 대규모 브랜딩. 배달 속도 강조 크리에이티브.', impact:'high' },
+  { site:'baemin', name:'치킨 페스티벌', period:'2024-09~10', year:2024, platforms:['tv','meta','kakao','naver'], type:'시즌 이벤트', desc:'추석·연휴 치킨 주문 성수기 캠페인. TV 광고 집중. 할인 쿠폰 알림톡 대규모 발송.', impact:'mid' },
+  { site:'baemin', name:'B마트 신선식품 캠페인', period:'2024-11~2025-01', year:2024, platforms:['google','meta','naver'], type:'서비스 확장', desc:'B마트 쿠팡·컬리 대항 신선식품 강화. 새벽배달 키워드 공략. 성과형 디스플레이 집중.', impact:'mid' },
+  { site:'baemin', name:'배민클럽 구독 캠페인', period:'2025-04~06', year:2025, platforms:['tv','meta','kakao','google'], type:'멤버십 획득', desc:'배민클럽 월정액 멤버십 론칭. 배달비 무료 혜택으로 신규 구독자 유치. TV 광고 집중.', impact:'high' },
+  { site:'baemin', name:'여름 야식 특별 캠페인', period:'2025-07~08', year:2025, platforms:['meta','kakao','google'], type:'시즌 이벤트', desc:'여름 야식 성수기 캠페인. 치킨·맥주 조합 추천 광고. 야간 시간대 타겟팅 집중.', impact:'mid' },
+
+  // 야놀자
+  { site:'yanolja', name:'여름 숙박 특가 캠페인', period:'2024-06~08', year:2024, platforms:['tv','naver','google','meta','kakao'], type:'시즌 이벤트', desc:'여름 휴가 성수기 최대 시즌. TV+유튜브 대규모 브랜딩. 숙박·펜션·호텔 파워링크 상위 입찰 집중.', impact:'high' },
+  { site:'yanolja', name:'야놀자 클라우드 B2B 캠페인', period:'2024-09~11', year:2024, platforms:['google','naver'], type:'B2B 서비스', desc:'야놀자 클라우드 숙박업 솔루션 B2B 광고. 구글 검색+링크드인 연계. 숙박업주 타겟 광고.', impact:'mid' },
+  { site:'yanolja', name:'연휴 여행 패키지 캠페인', period:'2025-09~10', year:2025, platforms:['tv','naver','google','meta','kakao'], type:'시즌 이벤트', desc:'추석(10/5~7) 연휴 직전 여행 패키지 특가. 추석 전 2~3주 예산 집중 집행. CPC 최대 2배 상승 예상.', impact:'high' },
+  { site:'yanolja', name:'2026 봄여행 캠페인', period:'2026-03~05', year:2026, platforms:['tv','naver','google','meta'], type:'시즌 이벤트', desc:'봄 여행 시즌 캠페인. 제주·국내 여행 키워드 집중. TV+유튜브 브랜딩+성과 혼합 집행.', impact:'mid' },
+
+  // 강남언니
+  { site:'gangnamunni', name:'봄 뷰티 시즌 캠페인', period:'2024-03~05', year:2024, platforms:['naver','meta','google','kakao'], type:'시즌 이벤트', desc:'봄 성형·피부 시즌. 쌍꺼풀·코성형 파워링크 집중. 인스타그램 비포애프터 릴스 대규모 집행.', impact:'high' },
+  { site:'gangnamunni', name:'리프팅·보톡스 이벤트 광고', period:'2024-10~12', year:2024, platforms:['meta','naver','kakao'], type:'프로모션', desc:'연말 뷰티 성수기. 리프팅·보톡스 이벤트 프라이스 강조 광고. 인스타그램+네이버 집중.', impact:'mid' },
+  { site:'gangnamunni', name:'2025 봄 성형 시즌', period:'2025-03~05', year:2025, platforms:['naver','meta','google','kakao'], type:'시즌 이벤트', desc:'봄 성형 성수기. 파워링크 CPC 최고점(시즌별 3,000~20,000원). 비포애프터 릴스 집중.', impact:'high' },
+
+  // 무신사
+  { site:'musinsa', name:'무신사 대학교 캠퍼스 세일', period:'2024-02~03', year:2024, platforms:['meta','naver','kakao'], type:'시즌 세일', desc:'신학기 캠퍼스 패션 세일. 18~24세 대학생 타겟. 인스타그램+카카오 집중.', impact:'mid' },
+  { site:'musinsa', name:'무진장 블랙프라이데이', period:'2024-11-11~11-20', year:2024, platforms:['meta','naver','google','kakao'], type:'시즌 세일', desc:'무신사 최대 세일. 전 입점 브랜드 할인. 인스타그램 릴스+파워링크+쇼핑검색 총력.', impact:'high' },
+  { site:'musinsa', name:'2025 스탠다드 자체브랜드 확장', period:'2025-03~06', year:2025, platforms:['meta','google','naver','tv'], type:'브랜드 광고', desc:'무신사 스탠다드 자체 브랜드 강화. TV 광고 첫 집행. 가성비 패션 타겟 확대.', impact:'high' },
+  { site:'musinsa', name:'2025 무진장 세일', period:'2025-11-10~11-21', year:2025, platforms:['meta','naver','google','kakao','tv'], type:'시즌 세일', desc:'전년 대비 예산 약 20% 확대 추정. TV 광고 추가. 전 채널 총력 집행.', impact:'high' },
+
+  // 올리브영
+  { site:'oliveyoung', name:'올영 세일(봄)', period:'2024-04-18~04-23', year:2024, platforms:['naver','meta','google','kakao'], type:'시즌 세일', desc:'연 4회 올영 세일 중 봄 시즌. 뷰티 쇼핑검색+동적 카탈로그 집중. 외국인 관광객 타겟 추가.', impact:'high' },
+  { site:'oliveyoung', name:'올영 세일(가을)', period:'2024-10-10~10-15', year:2024, platforms:['naver','meta','google','kakao'], type:'시즌 세일', desc:'추석 이후 가을 세일. 추석 연휴 트래픽 전환 집중. 성분별 타겟 뷰티 광고.', impact:'high' },
+  { site:'oliveyoung', name:'K-뷰티 글로벌 캠페인', period:'2024-06~09', year:2024, platforms:['meta','google'], type:'글로벌 마케팅', desc:'K-뷰티 외국인 타겟 글로벌 캠페인. 인스타그램 글로벌 광고+구글 영어 키워드 집행.', impact:'mid' },
+  { site:'oliveyoung', name:'2026 봄 올영 세일', period:'2026-04~05', year:2026, platforms:['naver','meta','google','kakao'], type:'시즌 세일', desc:'2026년 봄 세일. AI 개인화 추천 연계 맞춤 광고 집행. CPC 전년 대비 +14% 예상.', impact:'high' },
+
+  // 카카오뱅크
+  { site:'kakaobank', name:'26주적금 챌린지 캠페인', period:'2024-01~03', year:2024, platforms:['kakao','meta','naver'], type:'금융 상품', desc:'26주 적금 챌린지 SNS 바이럴 캠페인. 인스타그램+카카오 채널 집중. 20~35세 저축 습관 타겟.', impact:'high' },
+  { site:'kakaobank', name:'대출 금리 비교 캠페인', period:'2024-08~10', year:2024, platforms:['naver','google','kakao'], type:'금융 상품', desc:'주담대 금리 경쟁 시즌. 파워링크 최상위 입찰. 금리 비교 크리에이티브 집중.', impact:'high' },
+  { site:'kakaobank', name:'카카오뱅크 카드 론칭', period:'2025-03~05', year:2025, platforms:['kakao','meta','naver','google'], type:'서비스 론칭', desc:'신규 카드 상품 론칭. 카카오페이 연동 혜택 강조. 카카오톡 채널 메시지 대규모 발송.', impact:'mid' },
+
+  // 마켓컬리
+  { site:'kurly', name:'컬리패스 구독 캠페인', period:'2024-03~05', year:2024, platforms:['meta','naver','google','kakao'], type:'멤버십 획득', desc:'무제한 무료배송 구독 캠페인. 인스타그램 식품 비주얼+네이버 쇼핑검색 집중.', impact:'mid' },
+  { site:'kurly', name:'여름 산지직송 캠페인', period:'2024-07~08', year:2024, platforms:['meta','naver','kakao'], type:'시즌 이벤트', desc:'여름 제철 식재료 산지직송 특가. 인스타그램 식품 비주얼 릴스 집중 집행.', impact:'mid' },
+  { site:'kurly', name:'추석 선물세트 캠페인', period:'2024-08-20~09-10', year:2024, platforms:['naver','meta','kakao','google'], type:'시즌 이벤트', desc:'추석 선물세트 검색광고 집중. 명절 선물 키워드 파워링크+쇼핑검색 경쟁.', impact:'high' },
+  { site:'kurly', name:'2025 연말 식품 선물 캠페인', period:'2025-11~12', year:2025, platforms:['naver','meta','kakao','google'], type:'시즌 이벤트', desc:'연말 프리미엄 식품 선물 시즌. 와인·한우·굴비세트 키워드 집중. 30~50대 프리미엄 소비층 타겟.', impact:'high' },
+
+  // 당근
+  { site:'daangn', name:'당근 신규 서비스 중고거래 캠페인', period:'2024-02~04', year:2024, platforms:['tv','meta','google'], type:'브랜드 광고', desc:'당근마켓→당근 리브랜딩 캠페인. TV 광고 대규모 집행. 동네 이웃 감성 크리에이티브.', impact:'high' },
+  { site:'daangn', name:'당근페이 확산 캠페인', period:'2024-06~09', year:2024, platforms:['kakao','meta','google'], type:'서비스 확장', desc:'당근페이 중고거래 결제 확산. 안전결제 신뢰 강조 광고. 앱 내 결제 유도.', impact:'mid' },
+  { site:'daangn', name:'동네 생활 서비스 캠페인', period:'2025-03~06', year:2025, platforms:['tv','meta','google','naver'], type:'서비스 확장', desc:'동네 생활 서비스(알바·부동산·중고차 등) 확장. TV+유튜브 브랜딩+UAC 성과 혼합.', impact:'high' },
+
+  // 원티드
+  { site:'wanted', name:'연초 이직 시즌 캠페인', period:'2024-01~03', year:2024, platforms:['naver','google','meta'], type:'시즌 이벤트', desc:'연초 이직·채용 최대 성수기. 파워링크+검색광고 집중. 20~35세 직장인 타겟.', impact:'high' },
+  { site:'wanted', name:'하반기 공채 캠페인', period:'2024-08~10', year:2024, platforms:['naver','google','meta'], type:'시즌 이벤트', desc:'하반기 공채 시즌. IT·개발 직군 검색광고 집중. 스타트업 채용 키워드 공략.', impact:'high' },
+  { site:'wanted', name:'AI 매칭 서비스 론칭', period:'2025-04~06', year:2025, platforms:['google','meta','naver'], type:'서비스 론칭', desc:'AI 직무 매칭 서비스 론칭 캠페인. 기술력 강조 크리에이티브. 개발자 타겟 유튜브 광고.', impact:'mid' },
+
+  // 클래스101
+  { site:'class101', name:'클래스101+ 구독 론칭', period:'2024-01~03', year:2024, platforms:['google','meta','naver','kakao'], type:'서비스 론칭', desc:'월정액 구독 서비스 론칭 캠페인. 무료 체험 광고 집중. 취미 키워드 검색광고 확대.', impact:'high' },
+  { site:'class101', name:'시즌 세일(블프)', period:'2024-11-11~11-29', year:2024, platforms:['meta','naver','google','kakao'], type:'시즌 세일', desc:'빼빼로데이+블랙프라이데이 시즌. 강의 최대 80% 할인. 채널 메시지 대규모 발송.', impact:'mid' },
+  { site:'class101', name:'2025 취미 클래스 확대 캠페인', period:'2025-03~05', year:2025, platforms:['meta','google','naver'], type:'서비스 확장', desc:'취미 카테고리 확대. 셀럽 강사 영입 연계 마케팅. 인스타그램 완성작 공유 바이럴.', impact:'mid' },
+];
+
+// ── 이벤트 분석 렌더링 ──
+const IMPACT_MAP = { high:{ label:'대형', bg:'#fce8e6', color:'#c5221f', border:'#f4b8b5' }, mid:{ label:'중형', bg:'#fef7e0', color:'#b06000', border:'#f5d891' }, low:{ label:'소형', bg:'#e6f4ea', color:'#137333', border:'#b7dfbf' } };
+
+function analyzeEvtUrl() {
+  const raw = document.getElementById('evtUrlInput').value.trim();
+  if (!raw) return;
+  const detected = detectIndustry(raw);
+  const result = document.getElementById('evtUrlResult');
+  result.style.display = 'block';
+
+  // 사이트 매칭 여부
+  const siteKey = detected.siteKey || null;
+  const siteData = siteKey ? KNOWN_SITES[siteKey] : null;
+  const pm = curPeriodMult || 1;
+
+  // CPC 데이터 조합
+  const indKey = detected.key;
+  const gd = DATA.google.industries.find(i=>i.key===indKey) || {cpc:800,ctr:3.2};
+  const nd = DATA.naver.industries.find(i=>i.key===indKey)  || {cpc:500,ctr:2.8};
+  const md = DATA.meta.industries.find(i=>i.key===indKey)   || {cpc:400,ctr:1.2};
+  const kd = DATA.kakao.industries.find(i=>i.key===indKey)  || {cpc:300,ctr:1.8};
+
+  // 사이트 고유 CPC 우선, 없으면 업종 평균
+  const sc = siteData && siteData.cpc;
+  const rows = [
+    { plat:'Google Ads',     key:'google', cpc: sc ? Math.round(sc.google.avg*pm) : Math.round(gd.cpc*pm), min: sc ? Math.round(sc.google.min*pm) : Math.round(gd.cpc*0.5*pm), max: sc ? Math.round(sc.google.max*pm) : Math.round(gd.cpc*2.5*pm), ctr: gd.ctr, color:'#3367d6', bg:'#e8f0fe' },
+    { plat:'네이버 성과형',  key:'naver',  cpc: sc ? Math.round(sc.naver.avg*pm)  : Math.round(nd.cpc*pm), min: sc ? Math.round(sc.naver.min*pm)  : Math.round(nd.cpc*0.5*pm), max: sc ? Math.round(sc.naver.max*pm)  : Math.round(nd.cpc*2.5*pm), ctr: nd.ctr, color:'#137333', bg:'#e6f4ea' },
+    { plat:'Meta Ads',       key:'meta',   cpc: sc ? Math.round(sc.meta.avg*pm)   : Math.round(md.cpc*pm), min: sc ? Math.round(sc.meta.min*pm)   : Math.round(md.cpc*0.5*pm), max: sc ? Math.round(sc.meta.max*pm)   : Math.round(md.cpc*2.5*pm), ctr: md.ctr, color:'#c5221f', bg:'#fce8e6' },
+    { plat:'카카오 모먼트',  key:'kakao',  cpc: sc ? Math.round(sc.kakao.avg*pm)  : Math.round(kd.cpc*pm), min: sc ? Math.round(sc.kakao.min*pm)  : Math.round(kd.cpc*0.5*pm), max: sc ? Math.round(sc.kakao.max*pm)  : Math.round(kd.cpc*2.5*pm), ctr: kd.ctr, color:'#b06000', bg:'#fef7e0' },
+  ];
+  const maxCpc = Math.max(...rows.map(r=>r.cpc));
+  const siteBadge = siteData
+    ? `<span style="background:var(--good-bg);color:var(--good);border-radius:6px;padding:2px 10px;font-size:11px;font-weight:700;border:1px solid #c3e8d6">사이트 고유 데이터</span>`
+    : `<span style="background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:2px 10px;font-size:11px;font-weight:700;border:1px solid #f7dcc0">업종 평균 추정</span>`;
+  const periodPct = Math.round((pm-1)*100);
+  const periodBadge = periodPct !== 0
+    ? `<span style="font-size:11px;color:${periodPct>0?'var(--bad)':'var(--good)'}"> ${periodPct>0?'▲':'▼'}${Math.abs(periodPct)}%</span>` : '';
+
+  // 이벤트 히스토리 (해당 사이트 → 없으면 같은 업종 사이트 이벤트 표시)
+  let siteEvts = siteKey ? EVENTS.filter(e=>e.site===siteKey).sort((a,b)=>b.period.localeCompare(a.period)) : [];
+  let evtLabel = siteKey && siteEvts.length ? `${siteData?.name||siteKey} 이벤트 히스토리` : '';
+
+  if (!siteEvts.length) {
+    // 같은 업종 이벤트로 폴백
+    const sameIndSites = Object.entries(KNOWN_SITES)
+      .filter(([k,v]) => v.key === indKey)
+      .map(([k]) => k);
+    siteEvts = EVENTS.filter(e=>sameIndSites.includes(e.site))
+      .sort((a,b)=>b.period.localeCompare(a.period)).slice(0,6);
+    evtLabel = siteEvts.length ? `동일 업종(${detected.name||indKey}) 유사 이벤트` : '';
+  } else {
+    siteEvts = siteEvts.slice(0,6);
+  }
+
+  const makeChips = platforms => platforms.map(p=>{
+    const m=PLAT_META[p]||{label:p,bg:'#f5f5f5',color:'#888',border:'#ddd'};
+    return `<span style="background:${m.bg};color:${m.color};border:1px solid ${m.border};border-radius:5px;padding:1px 7px;font-size:10px;font-weight:700">${m.label||p}</span>`;
+  }).join('');
+
+  const evtRows = siteEvts.map(e=>{
+    const im = IMPACT_MAP[e.impact]||IMPACT_MAP.mid;
+    const eSite = KNOWN_SITES[e.site];
+    const siteTag = (eSite && e.site !== siteKey) ? ` <span style="font-size:10px;color:var(--muted);font-weight:400">(${eSite.name})</span>` : '';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:9px 10px;font-size:12px;font-weight:600;color:var(--text)">${e.name}${siteTag}</td>
+      <td style="padding:9px 10px;font-size:11px;color:var(--muted);white-space:nowrap">${e.period}</td>
+      <td style="padding:9px 10px"><span style="background:${im.bg};color:${im.color};border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700">${im.label}</span></td>
+      <td style="padding:9px 10px;font-size:11px;color:var(--text)">${e.type}</td>
+      <td style="padding:9px 10px">${makeChips(e.platforms)}</td>
+    </tr>`;
+  }).join('');
+
+  result.innerHTML = `
+    <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <!-- 헤더 -->
+      <div style="background:var(--accent-light);padding:14px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="width:36px;height:36px;border-radius:9px;background:var(--accent-grad);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">${(siteData?.name||detected.domain||'?').slice(0,2)}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">${siteData?.name||detected.domain||raw}</div>
+          <div style="font-size:11px;color:var(--muted)">${detected.name||''} · ${detected.domain||''}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">${siteBadge}${periodBadge}</div>
+      </div>
+      <!-- CPC 분석표 -->
+      <div style="padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px">플랫폼별 CPC 분석 (원)</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--card2)">
+            <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">플랫폼</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">최소 CPC</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">평균 CPC</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">최대 CPC</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">CTR</th>
+            <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">상대 수준</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r=>{
+              const bar = Math.round(r.cpc/maxCpc*90);
+              return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:10px 10px"><span style="background:${r.bg};color:${r.color};border-radius:7px;padding:3px 10px;font-size:12px;font-weight:700">${r.plat}</span></td>
+                <td style="padding:10px;text-align:right;font-size:12px;color:var(--muted)">₩${fmt(r.min)}</td>
+                <td style="padding:10px;text-align:right;font-size:14px;font-weight:700;color:${r.color}">₩${fmt(r.cpc)}</td>
+                <td style="padding:10px;text-align:right;font-size:12px;color:var(--muted)">₩${fmt(r.max)}</td>
+                <td style="padding:10px;text-align:right;font-size:12px;color:var(--muted)">${r.ctr}%</td>
+                <td style="padding:10px"><div style="height:6px;background:#eee;border-radius:3px;width:100px"><div style="height:6px;background:${r.color};border-radius:3px;width:${bar}px;transition:width .4s"></div></div></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${(siteKey && siteData && siteData.why) ? '<div style="padding:12px 18px;font-size:12px;color:var(--muted);background:var(--card2);border-top:1px solid var(--border)"><b>CPC 수준 근거:</b> ' + siteData.why + '</div>' : ''}
+      <div style="padding:16px 18px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px">${evtLabel || '이벤트 데이터 없음'}</div>
+        ${siteEvts.length ? '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--card2)"><th style="padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted)">이벤트명</th><th style="padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted)">기간</th><th style="padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted)">규모</th><th style="padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted)">유형</th><th style="padding:7px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted)">집행 채널</th></tr></thead><tbody>' + evtRows + '</tbody></table>'
+          : '<div style="color:var(--muted);font-size:13px;padding:8px 0">해당 사이트의 이벤트 데이터가 없습니다. 이벤트 분석 탭에서 전체 목록을 확인하세요.</div>'}
+      </div>
+    </div>`;
+
+  // 필터도 해당 사이트로 자동 설정
+  if (siteKey) {
+    const sf = document.getElementById('evtSiteFilter');
+    if (![...sf.options].some(o=>o.value===siteKey)) {
+      sf.add(new Option(siteData?.name||siteKey, siteKey));
+    }
+    sf.value = siteKey;
+    renderEvents();
+  }
+}
+
+function clearEvtUrl() {
+  document.getElementById('evtUrlInput').value = '';
+  document.getElementById('evtUrlResult').style.display = 'none';
+  document.getElementById('evtSiteFilter').value = '';
+  renderEvents();
+}
+
+function renderEvents() {
+  const sf = document.getElementById('evtSiteFilter');
+  const yf = document.getElementById('evtYearFilter').value;
+  const pf = document.getElementById('evtPlatFilter').value;
+  // 사이트 옵션 초기화
+  if (sf.options.length <= 1) {
+    const sites = [...new Set(EVENTS.map(e=>e.site))];
+    sites.forEach(k => {
+      const s = KNOWN_SITES[k]; if (s) sf.add(new Option(s.name, k));
+    });
+  }
+  const sv = sf.value;
+  let evts = EVENTS.filter(e =>
+    (!sv || e.site === sv) &&
+    (!yf || e.year == yf) &&
+    (!pf || e.platforms.includes(pf))
+  ).sort((a,b) => b.period.localeCompare(a.period));
+  document.getElementById('evtCount').textContent = `총 ${evts.length}개 이벤트`;
+  const list = document.getElementById('evtList');
+  if (!evts.length) { list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center">조건에 맞는 이벤트가 없습니다.</div>'; return; }
+  list.innerHTML = evts.map(e => {
+    const s = KNOWN_SITES[e.site]||{};
+    const im = IMPACT_MAP[e.impact]||IMPACT_MAP.mid;
+    const platChips = e.platforms.map(p=>{
+      const m=PLAT_META[p]||{label:p,bg:'#f5f5f5',color:'#666',border:'#ddd'};
+      return `<span style="background:${m.bg};color:${m.color};border:1px solid ${m.border};border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600">${m.label||p}</span>`;
+    }).join('');
+    return `<div class="card" style="margin-bottom:12px;padding:18px 22px">
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);border:1px solid #ddd8f5;flex-shrink:0">${(s.name||e.site).slice(0,2)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-size:15px;font-weight:700;color:var(--text)">${e.name}</span>
+            <span style="background:${im.bg};color:${im.color};border:1px solid ${im.border};border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700">${im.label} 캠페인</span>
+            <span style="background:var(--card2);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:600">${e.type}</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${s.name||e.site} · ${e.period}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:10px">${e.desc}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">${platChips}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// 플랫폼 컬러·라벨 매핑
+const PLAT_META = {
+  google: { label:'Google Ads',  bg:'#e8f0fe', color:'#3367d6', border:'#c5d5f8' },
+  naver:  { label:'네이버',      bg:'#e6f4ea', color:'#137333', border:'#b7dfbf' },
+  meta:   { label:'Meta Ads',    bg:'#fce8e6', color:'#c5221f', border:'#f4b8b5' },
+  kakao:  { label:'카카오',      bg:'#fef7e0', color:'#b06000', border:'#f5d891' },
+  tv:     { label:'TV/OTT',      bg:'#f3e8fd', color:'#7c3aed', border:'#d8b4fe' },
+};
+
+let campPlatform = 'all';
+
+function setCampPlatform(p, btn) {
+  campPlatform = p;
+  document.querySelectorAll('#campPlatTabs .plat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCampaign();
+}
+
+function analyzeCampUrl() {
+  const raw = document.getElementById('campUrlInput').value.trim();
+  if (!raw) return;
+  const detected = detectIndustry(raw);
+  const siteKey = detected.siteKey || null;
+  const sf = document.getElementById('campSiteFilter');
+  if (siteKey && PLATFORM_FOCUS[siteKey]) {
+    // 알려진 사이트면 필터 설정 후 렌더
+    if (![...sf.options].some(o=>o.value===siteKey)) {
+      const s = KNOWN_SITES[siteKey];
+      sf.add(new Option(s ? s.name : siteKey, siteKey));
+    }
+    sf.value = siteKey;
+    campPlatform = 'all';
+    document.querySelectorAll('#campPlatTabs .plat-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
+    renderCampaign();
+  } else {
+    // 알려진 사이트 없음 → 업종 안내
+    sf.value = '';
+    renderCampaign();
+    const grid = document.getElementById('campGrid');
+    const indName = detected.name || detected.key || '해당 업종';
+    grid.innerHTML = `<div class="card" style="padding:22px;grid-column:1/-1">
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">${detected.domain || raw}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">등록된 캠페인 데이터가 없습니다. <b>${indName}</b> 업종 유사 사이트 전략을 참고하세요.</div>
+      <div style="font-size:12px;color:var(--accent);cursor:pointer" onclick="document.getElementById('campSiteFilter').value='';renderCampaign()">→ 전체 사이트 보기</div>
+    </div>` + grid.innerHTML;
+  }
+}
+
+function renderCampaign() {
+  const siteFilter = document.getElementById('campSiteFilter');
+  // 사이트 필터 옵션 초기화 (최초 1회)
+  if (siteFilter.options.length <= 1) {
+    Object.entries(PLATFORM_FOCUS).forEach(([k, v]) => {
+      const s = KNOWN_SITES[k];
+      if (s) { const o = new Option(s.name, k); siteFilter.add(o); }
+    });
+  }
+  const filterSite = siteFilter.value;
+  const plats = campPlatform === 'all' ? ['google','naver','meta','kakao'] : [campPlatform];
+  const entries = Object.entries(PLATFORM_FOCUS).filter(([k]) => !filterSite || k === filterSite);
+  const grid = document.getElementById('campGrid');
+  if (!entries.length) { grid.innerHTML = '<div style="color:var(--muted);padding:20px">데이터가 없습니다.</div>'; return; }
+  grid.innerHTML = entries.map(([key, pf]) => {
+    const s = KNOWN_SITES[key] || {};
+    const platHtml = plats.map(p => {
+      const d = pf[p]; if (!d) return '';
+      const m = PLAT_META[p];
+      return `<div style="background:${m.bg};border:1px solid ${m.border};border-radius:10px;padding:14px 16px;margin-top:10px">
+        <div style="font-size:11px;font-weight:700;color:${m.color};margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">${m.label}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+          ${d.types.map(t=>`<span style="background:rgba(0,0,0,0.06);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;color:${m.color}">${t}</span>`).join('')}
+        </div>
+        <ul style="margin:0;padding-left:16px;font-size:12px;line-height:1.7;color:#444">
+          ${d.campaigns.map(c=>`<li>${c}</li>`).join('')}
+        </ul>
+        <div style="margin-top:8px;font-size:11px;color:#777;font-style:italic;border-top:1px solid ${m.border};padding-top:6px">${d.budget}</div>
+      </div>`;
+    }).join('');
+    return `<div class="card" style="padding:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);border:1px solid #ddd8f5;flex-shrink:0">${(s.name||key).slice(0,2)}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text)">${s.name||key}</div>
+          <div style="font-size:11px;color:var(--muted)">${s.desc||''}</div>
+        </div>
+      </div>
+      ${platHtml}
+    </div>`;
+  }).join('');
+}
+
+renderBenchmark();
+</script>
+</body>
+</html>
