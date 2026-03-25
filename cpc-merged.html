@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPC 분석 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-grad: linear-gradient(135deg,#d6e8f5 0%,#ddd8f0 100%);
+  --sidebar: rgba(255,255,255,0.9);
+  --card: rgba(255,255,255,0.88);
+  --card2: #f4f9fc;
+  --border: rgba(0,0,0,0.07);
+  --text: #1a2332;
+  --muted: #7a8fa6;
+  --accent: #0d9488;
+  --accent2: #14b8a6;
+  --accent-light: #e0f7f5;
+  --accent-grad: linear-gradient(135deg,#0d9488 0%,#0891b2 100%);
+  --good:#059669; --good-bg:#d1fae5;
+  --warn:#d97706; --warn-bg:#fef3c7;
+  --bad:#dc2626;  --bad-bg:#fee2e2;
+  --shadow: 0 2px 16px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.10);
+  --r:16px; --r-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-grad);min-height:100vh;color:var(--text);font-size:14px;display:flex;align-items:stretch;padding:20px;}
+
+.shell{display:flex;width:100%;max-width:1300px;margin:0 auto;background:rgba(255,255,255,0.3);backdrop-filter:blur(20px);border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.12);overflow:hidden;min-height:calc(100vh - 40px);}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--sidebar);backdrop-filter:blur(20px);border-right:1px solid rgba(255,255,255,0.6);display:flex;flex-direction:column;padding:28px 16px;}
+.logo{display:flex;align-items:center;gap:10px;padding:0 8px 28px;}
+.logo-icon{width:36px;height:36px;background:var(--accent-grad);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.logo-name{font-size:17px;font-weight:700;letter-spacing:-0.3px;}
+.logo-name span{color:var(--accent);}
+.nav-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:12px 10px 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--accent-light);color:var(--accent);}
+.nav-item.active{background:var(--accent-grad);color:#fff;box-shadow:0 4px 14px rgba(13,148,136,0.28);}
+.nav-ico{font-size:16px;width:20px;text-align:center;}
+.sidebar-foot{margin-top:auto;padding-top:20px;border-top:1px solid var(--border);}
+.ai-badge{background:var(--accent-light);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--accent);font-weight:500;line-height:1.5;}
+
+/* API KEY AREA in sidebar */
+.api-key-wrap{margin-top:10px;}
+.api-key-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:4px;}
+.api-key-input{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:11px;background:rgba(255,255,255,0.8);color:var(--text);outline:none;font-family:monospace;}
+.api-key-input:focus{border-color:var(--accent);}
+.api-key-status{font-size:10px;margin-top:4px;}
+.key-ok{color:var(--good);}
+.key-no{color:var(--bad);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;background:rgba(235,245,255,0.45);overflow:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 32px;border-bottom:1px solid rgba(255,255,255,0.5);background:rgba(255,255,255,0.35);backdrop-filter:blur(10px);flex-shrink:0;}
+.topbar-sub{font-size:12px;color:var(--accent);font-weight:500;margin-bottom:2px;}
+.topbar-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;}
+.topbar-badge{background:var(--accent-light);color:var(--accent);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;}
+.scroll{flex:1;overflow-y:auto;padding:28px 32px;}
+
+/* SECTIONS */
+.sec{display:none;}
+.sec.active{display:block;}
+
+/* CARD */
+.card{background:var(--card);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.7);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:16px;}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.card-hdr-title{font-size:15px;font-weight:600;}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.mb16{margin-bottom:16px;} .mb20{margin-bottom:20px;} .mb24{margin-bottom:24px;}
+
+/* STAT */
+.stat{background:var(--card);border:1px solid rgba(255,255,255,0.7);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.stat-lbl{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.stat-val{font-size:22px;font-weight:700;letter-spacing:-0.5px;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* HERO */
+.hero{background:var(--accent-grad);border-radius:var(--r);padding:30px 32px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.hero h2{font-size:21px;font-weight:700;margin-bottom:6px;letter-spacing:-0.3px;}
+.hero p{font-size:13px;opacity:.8;line-height:1.6;margin-bottom:20px;}
+.url-row{display:flex;gap:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:var(--r-sm);padding:6px 6px 6px 16px;}
+.url-row:focus-within{background:rgba(255,255,255,0.22);border-color:rgba(255,255,255,0.5);}
+.url-input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:14px;}
+.url-input::placeholder{color:rgba(255,255,255,0.55);}
+.btn-analyze{background:#fff;color:var(--accent);border:none;border-radius:8px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-analyze:hover{opacity:.9;transform:translateY(-1px);}
+.btn-analyze:active{transform:scale(.97);}
+.btn-analyze:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.chip{background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.85);cursor:pointer;transition:all .15s;}
+.chip:hover{background:rgba(255,255,255,0.24);}
+
+/* LOADING */
+.loading{text-align:center;padding:48px 0;display:none;}
+.spinner{width:38px;height:38px;border:3px solid rgba(13,148,136,0.15);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-txt{color:var(--muted);font-size:13px;}
+.load-txt span{color:var(--accent);font-weight:500;}
+
+/* ERROR */
+.err-box{background:var(--bad-bg);border:1px solid #fca5a5;border-radius:var(--r-sm);padding:14px 18px;color:var(--bad);font-size:13px;display:none;margin-bottom:16px;}
+
+/* RESULT */
+.result{animation:fadeUp .35s ease;display:none;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+.site-hdr{background:var(--card);border:1px solid rgba(255,255,255,0.7);border-radius:var(--r);padding:22px 24px;margin-bottom:16px;display:flex;align-items:flex-start;gap:16px;box-shadow:var(--shadow);}
+.site-emo{width:52px;height:52px;border-radius:14px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.site-name{font-size:18px;font-weight:700;margin-bottom:3px;}
+.site-url{font-size:12px;color:var(--muted);margin-bottom:6px;font-family:monospace;}
+.site-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.b-teal{background:#d0f5f0;color:#0d7a6e;}
+.b-blue{background:#dbeafe;color:#1d4ed8;}
+.b-amber{background:#fef3c7;color:#b45309;}
+.b-gray{background:#f1f5f9;color:#64748b;}
+.b-good{background:var(--good-bg);color:var(--good);}
+.b-warn{background:var(--warn-bg);color:var(--warn);}
+.b-bad{background:var(--bad-bg);color:var(--bad);}
+
+.plat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:4px;}
+.plat-card{background:var(--card);border:1px solid rgba(255,255,255,0.7);border-radius:var(--r-sm);padding:18px 20px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;}
+.plat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.plat-name{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;font-weight:500;}
+.plat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cpc-range{font-size:20px;font-weight:700;letter-spacing:-0.5px;margin-bottom:3px;}
+.cpc-sub{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.bar-bg{height:4px;border-radius:2px;background:rgba(0,0,0,0.06);overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+.diff-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.diff-lbl{font-size:11px;color:var(--muted);flex:1;padding-right:8px;line-height:1.4;}
+.diff-dots{display:flex;gap:3px;}
+.diff-dot{width:7px;height:7px;border-radius:2px;background:rgba(0,0,0,0.08);}
+.diff-dot.on{background:var(--warn);}
+
+.kw-wrap{background:var(--card);border:1px solid rgba(255,255,255,0.7);border-radius:var(--r-sm);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:4px;}
+.kw-list{display:flex;flex-wrap:wrap;gap:8px;}
+.kw-item{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;display:flex;align-items:center;gap:8px;}
+.kw-cpc{font-size:11px;color:var(--accent);font-weight:600;}
+.kw-vol{font-size:10px;color:var(--muted);}
+
+.ins-list{display:flex;flex-direction:column;gap:10px;}
+.ins-item{background:var(--card);border:1px solid rgba(255,255,255,0.7);border-radius:var(--r-sm);padding:16px 18px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow);}
+.ins-ico{font-size:16px;margin-top:1px;flex-shrink:0;}
+.ins-ttl{font-size:13px;font-weight:600;margin-bottom:4px;}
+.ins-bod{font-size:12px;color:var(--muted);line-height:1.6;}
+
+.budget-card{background:var(--card);border:1px solid rgba(255,255,255,0.7);border-radius:var(--r-sm);padding:18px 20px;box-shadow:var(--shadow);}
+.budget-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.budget-row:last-child{border-bottom:none;}
+.budget-lbl{color:var(--muted);}
+.budget-val{font-weight:600;}
+
+.sec-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin:22px 0 10px;}
+.reset-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:9px 18px;font-size:12px;cursor:pointer;margin-top:20px;transition:all .15s;}
+.reset-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* BENCHMARK */
+.plat-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.plat-tab{padding:9px 18px;border:1px solid var(--border);border-radius:20px;background:rgba(255,255,255,0.7);cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;}
+.plat-tab:hover{border-color:var(--accent);color:var(--accent);}
+.plat-tab.active{background:var(--accent-grad);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(13,148,136,0.25);}
+.info-box{background:var(--accent-light);border-radius:var(--r-sm);padding:14px 16px;font-size:13px;color:#0d7a6e;margin-bottom:20px;line-height:1.6;}
+.chart-wrap{position:relative;width:100%;height:380px;}
+
+/* MY DATA */
+select.sel,textarea.ta{width:100%;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.8);color:var(--text);outline:none;}
+select.sel{padding:10px 14px;font-size:14px;margin-bottom:12px;appearance:none;cursor:pointer;}
+select.sel:focus{border-color:var(--accent);}
+textarea.ta{padding:12px 14px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;min-height:150px;}
+textarea.ta:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(13,148,136,0.1);}
+.hint{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.btn-row{display:flex;gap:10px;margin-top:14px;}
+.btn-p{background:var(--accent-grad);color:#fff;border:none;border-radius:8px;padding:11px 24px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;box-shadow:0 4px 14px rgba(13,148,136,0.25);}
+.btn-p:hover{opacity:.85;}
+.btn-s{background:rgba(255,255,255,0.8);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:11px 18px;font-size:13px;cursor:pointer;transition:all .15s;}
+.btn-s:hover{border-color:var(--accent);color:var(--accent);}
+.res-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.res-row:last-child{border-bottom:none;}
+.res-lbl{font-weight:500;}
+.res-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.prog-bar{height:5px;border-radius:3px;background:rgba(0,0,0,0.06);margin-top:6px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.4px;}
+td{padding:10px 12px;border-bottom:1px solid rgba(0,0,0,0.05);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(13,148,136,0.03);}
+.mini-bar{display:inline-block;height:6px;border-radius:3px;opacity:.6;vertical-align:middle;margin-left:6px;}
+
+@media(max-width:860px){
+  body{padding:0;}
+  .shell{border-radius:0;min-height:100vh;}
+  .sidebar{width:60px;padding:20px 8px;}
+  .logo-name,.nav-item span,.nav-lbl,.sidebar-foot{display:none;}
+  .nav-item{justify-content:center;padding:12px;}
+  .nav-ico{width:auto;font-size:18px;}
+  .scroll{padding:20px 18px;}
+  .topbar{padding:16px 20px;}
+  .plat-grid,.g2{grid-template-columns:1fr;}
+  .g4{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">📊</div>
+      <div class="logo-name">CPC<span>Pro</span></div>
+    </div>
+    <div class="nav-lbl">메뉴</div>
+    <button class="nav-item active" data-sec="analyzer">
+      <span class="nav-ico">🔍</span><span>URL 자동 분석</span>
+    </button>
+    <button class="nav-item" data-sec="benchmark">
+      <span class="nav-ico">📈</span><span>업종별 벤치마크</span>
+    </button>
+    <button class="nav-item" data-sec="mydata">
+      <span class="nav-ico">📋</span><span>내 데이터 분석</span>
+    </button>
+    <button class="nav-item" data-sec="table">
+      <span class="nav-ico">🗂️</span><span>전체 데이터 표</span>
+    </button>
+    <div class="sidebar-foot">
+      <div class="ai-badge">⚡ Claude AI 기반<br>실시간 분석</div>
+      <div class="api-key-wrap">
+        <div class="api-key-label">🔑 API 키</div>
+        <input class="api-key-input" id="apiKeyInput" type="password" placeholder="sk-ant-..." oninput="onKeyInput()" />
+        <div class="api-key-status" id="keyStatus"><span class="key-no">키를 입력하세요</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-sub" id="tSub">AI로 CPC를 분석하세요</div>
+        <div class="topbar-title" id="tTitle">URL 자동 분석</div>
+      </div>
+      <div class="topbar-badge">2024–2025 데이터</div>
+    </div>
+
+    <div class="scroll">
+
+      <!-- SEC 1: URL ANALYZER -->
+      <div class="sec active" id="sec-analyzer">
+        <div class="hero">
+          <h2>사이트 주소만 넣으면 CPC를 자동으로 분석합니다</h2>
+          <p>URL을 입력하면 AI가 업종·타깃·경쟁도를 분석하고<br>Google·Meta·카카오·네이버 예상 CPC와 추천 키워드를 제공합니다.</p>
+          <div class="url-row">
+            <input class="url-input" id="urlInput" type="text" placeholder="https://example.com" />
+            <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">분석하기</button>
+          </div>
+          <div class="chips">
+            <span class="chip" onclick="setUrl('https://coupang.com')">coupang.com</span>
+            <span class="chip" onclick="setUrl('https://musinsa.com')">musinsa.com</span>
+            <span class="chip" onclick="setUrl('https://toss.im')">toss.im</span>
+            <span class="chip" onclick="setUrl('https://classu.co.kr')">classu.co.kr</span>
+            <span class="chip" onclick="setUrl('https://yanolja.com')">yanolja.com</span>
+            <span class="chip" onclick="setUrl('https://gangnamunni.com')">gangnamunni.com</span>
+          </div>
+        </div>
+        <div class="loading" id="loadingState">
+          <div class="spinner"></div>
+          <div class="load-txt">AI가 <span id="loadingUrl"></span> 분석 중...</div>
+        </div>
+        <div class="err-box" id="errorBox"></div>
+        <div class="result" id="resultWrap"></div>
+      </div>
+
+      <!-- SEC 2: BENCHMARK -->
+      <div class="sec" id="sec-benchmark">
+        <div class="info-box">플랫폼을 선택하면 업종별 평균 CPC 벤치마크를 확인할 수 있습니다. 데이터는 2024–2025년 국내외 집행 데이터 기반 추정치입니다.</div>
+        <div class="plat-tabs">
+          <button class="plat-tab active" onclick="setPlatform('google',this)">🔵 Google Ads</button>
+          <button class="plat-tab" onclick="setPlatform('meta',this)">🟢 Meta Ads</button>
+          <button class="plat-tab" onclick="setPlatform('kakao',this)">🟡 카카오 모먼트</button>
+          <button class="plat-tab" onclick="setPlatform('naver',this)">🔴 네이버 성과형</button>
+        </div>
+        <div class="g4 mb20" id="benchStats"></div>
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-hdr-title" id="chartTitle">Google Ads — 업종별 평균 CPC (원)</div>
+          </div>
+          <div class="chart-wrap"><canvas id="benchChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- SEC 3: MY DATA -->
+      <div class="sec" id="sec-mydata">
+        <div class="card mb20">
+          <div class="card-title">내 캠페인 데이터 입력</div>
+          <div class="hint">쉼표(,) 또는 탭으로 구분된 데이터를 붙여넣으세요.</div>
+          <div class="info-box" style="font-size:12px">
+            예시: 캠페인명, 노출수, 클릭수, 비용(원), 전환수<br>
+            봄_신상품_검색, 52000, 1840, 1288000, 42
+          </div>
+          <select class="sel" id="myIndustry">
+            <option value="">— 비교할 업종 선택 (선택사항) —</option>
+            <option value="ecommerce">이커머스 / 쇼핑</option>
+            <option value="finance">금융 / 보험</option>
+            <option value="healthcare">의료 / 헬스케어</option>
+            <option value="edu">교육 / 이러닝</option>
+            <option value="beauty">뷰티 / 화장품</option>
+            <option value="food">식품 / F&B</option>
+            <option value="travel">여행 / 숙박</option>
+            <option value="realestate">부동산</option>
+            <option value="auto">자동차</option>
+            <option value="tech">IT / SaaS</option>
+            <option value="fashion">패션 / 의류</option>
+            <option value="game">게임 / 앱</option>
+          </select>
+          <select class="sel" id="myPlatform">
+            <option value="google">Google Ads</option>
+            <option value="meta">Meta Ads</option>
+            <option value="kakao">카카오 모먼트</option>
+            <option value="naver">네이버 성과형</option>
+          </select>
+          <textarea class="ta" id="dataInput" placeholder="캠페인명,노출수,클릭수,비용(원),전환수&#10;캠페인1,50000,1500,900000,30"></textarea>
+          <div class="btn-row">
+            <button class="btn-p" onclick="analyzeData()">분석하기</button>
+            <button class="btn-s" onclick="loadSample()">샘플 데이터 불러오기</button>
+          </div>
+        </div>
+        <div id="analysisResult"></div>
+      </div>
+
+      <!-- SEC 4: TABLE -->
+      <div class="sec" id="sec-table">
+        <div class="card">
+          <div class="card-title">플랫폼별 업종 CPC 벤치마크 전체 표 (원)</div>
+          <div style="overflow-x:auto"><table id="fullTable"></table></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── NAV ──
+const META = {
+  analyzer: ['AI로 CPC를 분석하세요','URL 자동 분석'],
+  benchmark:['업종·플랫폼별 기준 데이터','업종별 벤치마크'],
+  mydata:   ['내 캠페인 성과를 진단하세요','내 데이터 분석'],
+  table:    ['전체 업종 비교 데이터','CPC 데이터 표'],
+};
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const name = btn.dataset.sec;
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-'+name).classList.add('active');
+    document.getElementById('tSub').textContent   = META[name][0];
+    document.getElementById('tTitle').textContent = META[name][1];
+    if (name==='table')     renderFullTable();
+    if (name==='benchmark') setTimeout(renderBenchmark,0);
+  });
+});
+
+// ── API KEY ──
+function getKey() { return document.getElementById('apiKeyInput').value.trim(); }
+function onKeyInput() {
+  const k = getKey();
+  const s = document.getElementById('keyStatus');
+  s.innerHTML = k.startsWith('sk-ant-')
+    ? '<span class="key-ok">✓ 키 입력됨</span>'
+    : k.length > 0
+    ? '<span class="key-no">올바른 키 형식이 아닙니다</span>'
+    : '<span class="key-no">키를 입력하세요</span>';
+}
+
+// ── BENCHMARK DATA ──
+const DATA = {
+  google:{name:'Google Ads',avgCpc:890,minCpc:210,maxCpc:4800,avgCtr:3.2,color:'#4f8eff',
+    industries:[
+      {name:'금융/보험',cpc:4800,ctr:2.9,key:'finance'},{name:'법률',cpc:3900,ctr:2.1,key:'legal'},
+      {name:'부동산',cpc:2400,ctr:3.8,key:'realestate'},{name:'IT/SaaS',cpc:2100,ctr:3.5,key:'tech'},
+      {name:'의료/헬스케어',cpc:1800,ctr:3.1,key:'healthcare'},{name:'자동차',cpc:1500,ctr:4.0,key:'auto'},
+      {name:'교육/이러닝',cpc:1200,ctr:4.2,key:'edu'},{name:'여행/숙박',cpc:980,ctr:4.5,key:'travel'},
+      {name:'이커머스',cpc:750,ctr:5.1,key:'ecommerce'},{name:'패션/의류',cpc:680,ctr:4.8,key:'fashion'},
+      {name:'뷰티/화장품',cpc:620,ctr:5.3,key:'beauty'},{name:'식품/F&B',cpc:490,ctr:5.6,key:'food'},
+      {name:'게임/앱',cpc:380,ctr:4.1,key:'game'},
+    ]},
+  meta:{name:'Meta Ads',avgCpc:480,minCpc:120,maxCpc:2600,avgCtr:1.2,color:'#10b981',
+    industries:[
+      {name:'금융/보험',cpc:2600,ctr:0.8,key:'finance'},{name:'부동산',cpc:1800,ctr:0.9,key:'realestate'},
+      {name:'의료/헬스케어',cpc:1400,ctr:1.0,key:'healthcare'},{name:'IT/SaaS',cpc:1100,ctr:1.1,key:'tech'},
+      {name:'자동차',cpc:950,ctr:1.2,key:'auto'},{name:'교육/이러닝',cpc:820,ctr:1.3,key:'edu'},
+      {name:'여행/숙박',cpc:680,ctr:1.5,key:'travel'},{name:'이커머스',cpc:520,ctr:1.7,key:'ecommerce'},
+      {name:'패션/의류',cpc:440,ctr:1.8,key:'fashion'},{name:'뷰티/화장품',cpc:380,ctr:2.1,key:'beauty'},
+      {name:'식품/F&B',cpc:290,ctr:2.0,key:'food'},{name:'게임/앱',cpc:210,ctr:1.9,key:'game'},
+    ]},
+  kakao:{name:'카카오 모먼트',avgCpc:320,minCpc:80,maxCpc:1800,avgCtr:1.8,color:'#f59e0b',
+    industries:[
+      {name:'금융/보험',cpc:1800,ctr:1.1,key:'finance'},{name:'부동산',cpc:1400,ctr:1.2,key:'realestate'},
+      {name:'의료/헬스케어',cpc:980,ctr:1.5,key:'healthcare'},{name:'교육/이러닝',cpc:750,ctr:1.8,key:'edu'},
+      {name:'자동차',cpc:700,ctr:1.6,key:'auto'},{name:'이커머스',cpc:480,ctr:2.2,key:'ecommerce'},
+      {name:'뷰티/화장품',cpc:350,ctr:2.5,key:'beauty'},{name:'패션/의류',cpc:310,ctr:2.3,key:'fashion'},
+      {name:'여행/숙박',cpc:290,ctr:2.0,key:'travel'},{name:'식품/F&B',cpc:220,ctr:2.4,key:'food'},
+      {name:'게임/앱',cpc:180,ctr:2.1,key:'game'},
+    ]},
+  naver:{name:'네이버 성과형',avgCpc:410,minCpc:100,maxCpc:3200,avgCtr:2.8,color:'#ef4444',
+    industries:[
+      {name:'금융/보험',cpc:3200,ctr:2.0,key:'finance'},{name:'부동산',cpc:2100,ctr:2.5,key:'realestate'},
+      {name:'의료/헬스케어',cpc:1600,ctr:2.8,key:'healthcare'},{name:'교육/이러닝',cpc:1100,ctr:3.2,key:'edu'},
+      {name:'IT/SaaS',cpc:900,ctr:2.9,key:'tech'},{name:'자동차',cpc:850,ctr:3.1,key:'auto'},
+      {name:'이커머스',cpc:620,ctr:3.8,key:'ecommerce'},{name:'뷰티/화장품',cpc:450,ctr:4.2,key:'beauty'},
+      {name:'패션/의류',cpc:390,ctr:3.9,key:'fashion'},{name:'여행/숙박',cpc:370,ctr:3.5,key:'travel'},
+      {name:'식품/F&B',cpc:280,ctr:4.0,key:'food'},{name:'게임/앱',cpc:200,ctr:3.3,key:'game'},
+    ]}
+};
+
+let curPlat='google', benchChart=null;
+const fmt = n => typeof n==='number' ? n.toLocaleString('ko-KR') : (n||'-');
+
+function setPlatform(key,btn){
+  curPlat=key;
+  document.querySelectorAll('.plat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBenchmark();
+}
+
+function renderBenchmark(){
+  const d=DATA[curPlat];
+  document.getElementById('chartTitle').textContent=d.name+' — 업종별 평균 CPC (원)';
+  document.getElementById('benchStats').innerHTML=`
+    <div class="stat"><div class="stat-icon" style="background:#e0f7f5">📊</div><div><div class="stat-lbl">평균 CPC</div><div class="stat-val">₩${fmt(d.avgCpc)}</div><div class="stat-sub">전 업종 평균</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#d1fae5">📉</div><div><div class="stat-lbl">최저 CPC</div><div class="stat-val">₩${fmt(d.minCpc)}</div><div class="stat-sub">${d.industries[d.industries.length-1].name}</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#fee2e2">📈</div><div><div class="stat-lbl">최고 CPC</div><div class="stat-val">₩${fmt(d.maxCpc)}</div><div class="stat-sub">${d.industries[0].name}</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#fef3c7">🎯</div><div><div class="stat-lbl">평균 CTR</div><div class="stat-val">${d.avgCtr}%</div><div class="stat-sub">클릭률</div></div></div>`;
+  const sorted=[...d.industries].sort((a,b)=>a.cpc-b.cpc);
+  const colors=sorted.map(v=>{const r=v.cpc/d.maxCpc;return r>.7?'#ef4444':r>.4?'#f59e0b':d.color;});
+  if(benchChart)benchChart.destroy();
+  benchChart=new Chart(document.getElementById('benchChart'),{
+    type:'bar',
+    data:{labels:sorted.map(i=>i.name),datasets:[{label:'평균 CPC (원)',data:sorted.map(i=>i.cpc),backgroundColor:colors,borderRadius:6,borderSkipped:false}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' ₩'+fmt(ctx.raw)+'  |  CTR '+sorted[ctx.dataIndex].ctr+'%'}}},
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{callback:v=>'₩'+fmt(v),font:{size:11}}},
+        y:{ticks:{font:{size:12}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+// ── MY DATA ──
+function loadSample(){
+  document.getElementById('dataInput').value=`캠페인명,노출수,클릭수,비용(원),전환수
+봄_신상품_검색광고,52000,1840,1288000,42
+브랜드_디스플레이,180000,2100,945000,18
+리타겟팅_장바구니,34000,980,588000,61
+신규_키워드_테스트,12000,290,203000,8`;
+  document.getElementById('myIndustry').value='ecommerce';
+  document.getElementById('myPlatform').value='google';
+}
+
+function parseCSV(text){
+  const lines=text.trim().split('\n').filter(l=>l.trim());
+  const res=[];let skip=false;
+  for(const line of lines){
+    const c=line.split(/[,\t]/).map(x=>x.trim());
+    if(!skip){if(isNaN(c[1])||isNaN(c[2])){skip=true;continue;}skip=true;}
+    if(c.length>=4){
+      const imp=parseInt(c[1].replace(/\D/g,''))||0;
+      const clk=parseInt(c[2].replace(/\D/g,''))||0;
+      const cost=parseInt(c[3].replace(/\D/g,''))||0;
+      const conv=parseInt((c[4]||'0').replace(/\D/g,''))||0;
+      if(clk>0&&cost>0)res.push({name:c[0],imp,clk,cost,conv,cpc:Math.round(cost/clk),ctr:clk/imp*100,cpa:conv>0?Math.round(cost/conv):null});
+    }
+  }
+  return res;
+}
+
+function grade(r){
+  if(r<0.8)return{lbl:'우수',cls:'good',color:'#059669'};
+  if(r<1.1)return{lbl:'평균',cls:'warn',color:'#d97706'};
+  return{lbl:'개선필요',cls:'bad',color:'#dc2626'};
+}
+
+function analyzeData(){
+  const text=document.getElementById('dataInput').value;
+  if(!text.trim()){alert('데이터를 입력해주세요.');return;}
+  const rows=parseCSV(text);
+  if(!rows.length){alert('데이터 형식을 확인해주세요.\n캠페인명,노출수,클릭수,비용,전환수');return;}
+  const ik=document.getElementById('myIndustry').value;
+  const pk=document.getElementById('myPlatform').value;
+  const pd=DATA[pk];
+  let bm=pd.avgCpc,bmLbl='전 업종 평균';
+  if(ik){const ind=pd.industries.find(i=>i.key===ik);if(ind){bm=ind.cpc;bmLbl=ind.name+' 업종 평균';}}
+  const totCost=rows.reduce((s,r)=>s+r.cost,0);
+  const totClk=rows.reduce((s,r)=>s+r.clk,0);
+  const totImp=rows.reduce((s,r)=>s+r.imp,0);
+  const totConv=rows.reduce((s,r)=>s+r.conv,0);
+  const avgCpc=Math.round(totCost/totClk);
+  const avgCtr=(totClk/totImp*100).toFixed(2);
+  const totCpa=totConv>0?Math.round(totCost/totConv):null;
+  const ratio=avgCpc/bm;
+  const g=grade(ratio);
+  let html=`<div class="card">
+    <div class="card-title">분석 결과 — ${pd.name}</div>
+    <div class="g4 mb20">
+      <div class="stat"><div class="stat-icon" style="background:#e0f7f5">💰</div><div><div class="stat-lbl">총 광고비</div><div class="stat-val" style="font-size:16px">₩${fmt(totCost)}</div></div></div>
+      <div class="stat"><div class="stat-icon" style="background:#dbeafe">👆</div><div><div class="stat-lbl">평균 CPC</div><div class="stat-val" style="font-size:16px">₩${fmt(avgCpc)}</div></div></div>
+      <div class="stat"><div class="stat-icon" style="background:#fef3c7">📊</div><div><div class="stat-lbl">평균 CTR</div><div class="stat-val" style="font-size:16px">${avgCtr}%</div></div></div>
+      <div class="stat"><div class="stat-icon" style="background:#d1fae5">✅</div><div><div class="stat-lbl">${totCpa?'CPA':'총 클릭'}</div><div class="stat-val" style="font-size:16px">${totCpa?'₩'+fmt(totCpa):fmt(totClk)}</div></div></div>
+    </div>
+    <div style="background:#f8fafc;border-radius:12px;padding:18px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div><div style="font-size:14px;font-weight:600">벤치마크 비교</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${bmLbl}: ₩${fmt(bm)}</div></div>
+        <span class="badge b-${g.cls}">${g.lbl}</span>
+      </div>
+      <div style="display:flex;gap:20px;font-size:13px;margin-bottom:10px;">
+        <span>내 CPC: <strong>₩${fmt(avgCpc)}</strong></span>
+        <span>벤치마크: <strong>₩${fmt(bm)}</strong></span>
+        <span style="color:${g.color};font-weight:600">${ratio<1?'▼ ':'▲ '}${Math.abs(Math.round((1-ratio)*100))}%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(100,ratio*50)}%;background:${g.color}"></div></div>
+    </div>
+    <div class="card-title">캠페인별 상세</div>`;
+  for(const r of rows){
+    const rg=grade(r.cpc/bm);
+    html+=`<div class="res-row">
+      <div><div class="res-lbl">${r.name}</div><div class="res-sub">노출 ${fmt(r.imp)} · 클릭 ${fmt(r.clk)} · CTR ${r.ctr.toFixed(2)}%${r.cpa?' · CPA ₩'+fmt(r.cpa):''}</div></div>
+      <div style="text-align:right;flex-shrink:0;padding-left:12px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px">₩${fmt(r.cpc)}</div>
+        <span class="badge b-${rg.cls}">${rg.lbl}</span>
+      </div>
+    </div>`;
+  }
+  html+='</div>';
+  document.getElementById('analysisResult').innerHTML=html;
+}
+
+// ── FULL TABLE ──
+function renderFullTable(){
+  const pk=['google','meta','kakao','naver'];
+  const ik=['finance','realestate','healthcare','edu','tech','auto','travel','ecommerce','fashion','beauty','food','game'];
+  const nm={finance:'금융/보험',realestate:'부동산',healthcare:'의료/헬스케어',edu:'교육/이러닝',tech:'IT/SaaS',auto:'자동차',travel:'여행/숙박',ecommerce:'이커머스',fashion:'패션/의류',beauty:'뷰티/화장품',food:'식품/F&B',game:'게임/앱'};
+  let h='<thead><tr><th>업종</th><th>Google Ads</th><th>Meta Ads</th><th>카카오 모먼트</th><th>네이버 성과형</th></tr></thead><tbody>';
+  for(const k of ik){
+    h+=`<tr><td style="font-weight:600">${nm[k]}</td>`;
+    for(const p of pk){
+      const ind=DATA[p].industries.find(i=>i.key===k);
+      if(ind){const w=Math.round(ind.cpc/DATA[p].industries[0].cpc*70);h+=`<td>₩${fmt(ind.cpc)}<span class="mini-bar" style="width:${w}px;background:${DATA[p].color}"></span></td>`;}
+      else h+='<td style="color:#ccc">—</td>';
+    }
+    h+='</tr>';
+  }
+  document.getElementById('fullTable').innerHTML=h+'</tbody>';
+}
+
+// ── URL ANALYZER ──
+function setUrl(url){document.getElementById('urlInput').value=url;document.getElementById('urlInput').focus();}
+document.getElementById('urlInput').addEventListener('keydown',e=>{if(e.key==='Enter')runAnalysis();});
+
+async function runAnalysis(){
+  const url=document.getElementById('urlInput').value.trim();
+  if(!url)return;
+
+  const apiKey=getKey();
+  if(!apiKey){
+    showError('왼쪽 사이드바에 Anthropic API 키(sk-ant-...)를 먼저 입력해주세요.');
+    return;
+  }
+
+  const btn=document.getElementById('analyzeBtn');
+  const ld=document.getElementById('loadingState');
+  const res=document.getElementById('resultWrap');
+  const err=document.getElementById('errorBox');
+  btn.disabled=true;ld.style.display='block';res.style.display='none';err.style.display='none';
+  document.getElementById('loadingUrl').textContent=url;
+
+  const prompt=`당신은 디지털 광고 전문가입니다. 아래 웹사이트 URL을 분석하여 CPC 광고 인사이트를 JSON으로 반환하세요.
+
+URL: ${url}
+
+URL의 도메인명, 경로, 서비스명 등을 기반으로 비즈니스를 추론하여 다음 JSON을 반환하세요.
+반드시 JSON만 반환하고 마크다운 코드블록(backtick)이나 설명 텍스트는 포함하지 마세요.
+
+{
+  "site_name":"사이트/브랜드명",
+  "emoji":"비즈니스를 나타내는 이모지 1개",
+  "industry":"업종명",
+  "description":"이 사이트가 하는 사업에 대한 1~2문장 설명",
+  "target_audience":"주요 타겟 고객층",
+  "business_model":"B2C 또는 B2B 또는 B2B2C",
+  "competition_level":"낮음/보통/높음/매우높음",
+  "tags":["태그1","태그2","태그3"],
+  "platforms":{
+    "google":{"cpc_min":숫자,"cpc_max":숫자,"cpc_avg":숫자,"difficulty":1~5,"ctr_avg":"X.X%","note":"한 줄 코멘트"},
+    "meta":{"cpc_min":숫자,"cpc_max":숫자,"cpc_avg":숫자,"difficulty":1~5,"ctr_avg":"X.X%","note":"한 줄 코멘트"},
+    "kakao":{"cpc_min":숫자,"cpc_max":숫자,"cpc_avg":숫자,"difficulty":1~5,"ctr_avg":"X.X%","note":"한 줄 코멘트"},
+    "naver":{"cpc_min":숫자,"cpc_max":숫자,"cpc_avg":숫자,"difficulty":1~5,"ctr_avg":"X.X%","note":"한 줄 코멘트"}
+  },
+  "keywords":[
+    {"keyword":"키워드1","cpc":숫자,"volume":"높음/보통/낮음"},
+    {"keyword":"키워드2","cpc":숫자,"volume":"높음/보통/낮음"},
+    {"keyword":"키워드3","cpc":숫자,"volume":"높음/보통/낮음"},
+    {"keyword":"키워드4","cpc":숫자,"volume":"높음/보통/낮음"},
+    {"keyword":"키워드5","cpc":숫자,"volume":"높음/보통/낮음"},
+    {"keyword":"키워드6","cpc":숫자,"volume":"높음/보통/낮음"}
+  ],
+  "insights":[
+    {"type":"opportunity","title":"기회 포인트","body":"이 비즈니스에 적합한 광고 전략 1가지"},
+    {"type":"warning","title":"주의 사항","body":"CPC 관련 주의해야 할 점"},
+    {"type":"tip","title":"추천 전략","body":"효율적인 광고비 운영 팁"}
+  ],
+  "monthly_budget_suggest":{"min":숫자,"recommended":숫자,"reason":"추천 이유 한 줄"}
+}`;
+
+  try{
+    const r=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key":apiKey,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:1500,messages:[{role:"user",content:prompt}]})
+    });
+    if(!r.ok){
+      const e=await r.json().catch(()=>({}));
+      if(r.status===401)throw new Error('API 키가 올바르지 않습니다. 사이드바에서 키를 확인해주세요.');
+      throw new Error(e.error?.message||'HTTP '+r.status);
+    }
+    const data=await r.json();
+    const raw=data.content.map(c=>c.text||'').join('');
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    ld.style.display='none';btn.disabled=false;
+    renderResult(parsed,url);
+  }catch(e){
+    ld.style.display='none';btn.disabled=false;
+    showError(e.message);
+  }
+}
+
+function showError(msg){
+  const err=document.getElementById('errorBox');
+  err.style.display='block';
+  err.textContent='⚠ '+msg;
+}
+
+function renderResult(d,inputUrl){
+  const wrap=document.getElementById('resultWrap');
+  const pm={
+    google:{label:'Google Ads',color:'#4f8eff'},
+    meta:{label:'Meta Ads',color:'#10b981'},
+    kakao:{label:'카카오 모먼트',color:'#f59e0b'},
+    naver:{label:'네이버 성과형',color:'#ef4444'}
+  };
+  const ii={opportunity:'✦',warning:'⚠',tip:'◎'};
+  const ic={opportunity:'var(--good)',warning:'var(--warn)',tip:'var(--accent)'};
+  const gmax=Math.max(...Object.values(d.platforms).map(p=>p.cpc_avg));
+  const vc={'높음':'var(--bad)','보통':'var(--warn)','낮음':'var(--good)'};
+
+  let platHtml='';
+  for(const[key,p]of Object.entries(d.platforms)){
+    if(!pm[key])continue;
+    const c=pm[key];
+    const pct=Math.round(p.cpc_avg/gmax*100);
+    const dots=Array.from({length:5},(_,i)=>`<div class="diff-dot ${i<p.difficulty?'on':''}"></div>`).join('');
+    platHtml+=`<div class="plat-card">
+      <div class="plat-name"><div class="plat-dot" style="background:${c.color}"></div>${c.label}</div>
+      <div class="cpc-range">₩${fmt(p.cpc_min)} ~ ₩${fmt(p.cpc_max)}</div>
+      <div class="cpc-sub">평균 ₩${fmt(p.cpc_avg)} · CTR ${p.ctr_avg}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:0%;background:${c.color}" data-w="${pct}"></div></div>
+      <div class="diff-row"><span class="diff-lbl">${p.note}</span><div class="diff-dots">${dots}</div></div>
+    </div>`;
+  }
+  const kwHtml=d.keywords.map(k=>`<div class="kw-item">${k.keyword}<span class="kw-cpc">₩${fmt(k.cpc)}</span><span class="kw-vol" style="color:${vc[k.volume]||'var(--muted)'}">${k.volume}</span></div>`).join('');
+  const insHtml=d.insights.map(i=>`<div class="ins-item"><div class="ins-ico" style="color:${ic[i.type]}">${ii[i.type]}</div><div><div class="ins-ttl">${i.title}</div><div class="ins-bod">${i.body}</div></div></div>`).join('');
+
+  wrap.innerHTML=`
+    <div class="site-hdr">
+      <div class="site-emo">${d.emoji||'🌐'}</div>
+      <div style="flex:1">
+        <div class="site-name">${d.site_name}</div>
+        <div class="site-url">${inputUrl}</div>
+        <div class="site-desc">${d.description}</div>
+        <div class="badge-row">
+          <span class="badge b-teal">${d.industry}</span>
+          <span class="badge b-blue">${d.business_model}</span>
+          <span class="badge b-amber">경쟁도 ${d.competition_level}</span>
+          ${(d.tags||[]).map(t=>`<span class="badge b-gray">${t}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="sec-label">플랫폼별 예상 CPC</div>
+    <div class="plat-grid mb16">${platHtml}</div>
+    <div class="sec-label">추천 키워드 & 예상 CPC</div>
+    <div class="kw-wrap mb16"><div class="kw-list">${kwHtml}</div></div>
+    <div class="sec-label">광고 인사이트</div>
+    <div class="ins-list mb16">${insHtml}</div>
+    <div class="sec-label">월 광고비 추천</div>
+    <div class="budget-card">
+      <div class="budget-row"><span class="budget-lbl">최소 예산</span><span class="budget-val" style="color:var(--muted)">월 ${fmt(d.monthly_budget_suggest.min)}만원</span></div>
+      <div class="budget-row"><span class="budget-lbl">추천 예산</span><span class="budget-val" style="color:var(--accent)">월 ${fmt(d.monthly_budget_suggest.recommended)}만원</span></div>
+      <div class="budget-row" style="border-bottom:none"><span class="budget-lbl" style="font-size:12px;color:var(--muted)">${d.monthly_budget_suggest.reason}</span></div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">← 다른 사이트 분석하기</button>`;
+  wrap.style.display='block';
+  setTimeout(()=>{
+    wrap.querySelectorAll('.bar-fill[data-w]').forEach(el=>setTimeout(()=>{el.style.width=el.dataset.w+'%';},50));
+  },100);
+}
+
+function resetAll(){
+  document.getElementById('resultWrap').style.display='none';
+  document.getElementById('errorBox').style.display='none';
+  document.getElementById('urlInput').value='';
+  document.getElementById('urlInput').focus();
+}
+
+renderBenchmark();
+</script>
+</body>
+</html>

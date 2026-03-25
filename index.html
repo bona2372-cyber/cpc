@@ -579,7 +579,15 @@ function refreshCurrentSection() {
   if (sec === 'sites') renderSiteComparison();
   if (sec === 'table') renderFullTable();
   if (sec === 'campaign') renderCampaign();
-  if (sec === 'events') renderEvents();
+  if (sec === 'events') {
+    // 기간 선택이 바뀌면 이벤트 연도 필터도 자동 동기화
+    const yf = document.getElementById('evtYearFilter');
+    if (yf && curPeriodYear) {
+      const yrStr = String(curPeriodYear);
+      if ([...yf.options].some(o => o.value === yrStr)) yf.value = yrStr;
+    }
+    renderEvents();
+  }
   // URL 분석 결과가 표시 중이면 기간 변경 시 자동 재렌더
   if (sec === 'analyzer' && _lastAnalyzedUrl && document.getElementById('resultWrap').style.display !== 'none') {
     const parsed = buildResult(_lastAnalyzedUrl, _lastCrawledData);
@@ -845,44 +853,51 @@ function analyzeSiteUrl(){
 // ── SITE COMPARISON ──
 function renderSiteComparison(){
   const emojiMap={};
-  const sites=[
-    {key:'coupang',    name:'쿠팡',       domain:'coupang.com',    ind:'ecommerce'},
-    {key:'baemin',     name:'배달의민족', domain:'baemin.com',     ind:'food'},
-    {key:'musinsa',    name:'무신사',     domain:'musinsa.com',    ind:'fashion'},
-    {key:'toss',       name:'토스',       domain:'toss.im',        ind:'finance'},
-    {key:'yanolja',    name:'야놀자',     domain:'yanolja.com',    ind:'travel'},
-    {key:'kakaobank',  name:'카카오뱅크', domain:'kakaobank.com',  ind:'finance'},
-    {key:'zigzag',     name:'지그재그',   domain:'zigzag.kr',      ind:'fashion'},
-    {key:'ably',       name:'에이블리',   domain:'a-bly.com',      ind:'fashion'},
-    {key:'kurly',      name:'마켓컬리',   domain:'kurly.com',      ind:'food'},
-    {key:'gangnamunni',name:'강남언니',   domain:'gangnamunni.com',ind:'healthcare'},
-    {key:'inflearn',   name:'인프런',     domain:'inflearn.com',   ind:'edu'},
-    {key:'classu',     name:'클래스유',   domain:'classu.co.kr',   ind:'edu'},
-    {key:'coloso',     name:'콜로소',     domain:'coloso.com',     ind:'edu'},
-  ];
+  // KNOWN_SITES 전체에서 cpc 데이터 있는 사이트 동적 로드
+  const sites = Object.entries(KNOWN_SITES)
+    .filter(([k,v]) => v.cpc && v.name)
+    .map(([k,v]) => ({
+      key: k,
+      name: v.name,
+      domain: v.domain || (k + '.com'),
+      ind: v.key,
+      cpc: v.cpc,
+    }));
 
   // stat cards
   const allG=sites.map(s=>(DATA.google.industries.find(i=>i.key===s.ind)||{cpc:0}).cpc);
   const allN=sites.map(s=>(DATA.naver.industries.find(i=>i.key===s.ind)||{cpc:0}).cpc);
-  const avgG=Math.round(allG.reduce((a,b)=>a+b,0)/allG.length);
-  const avgN=Math.round(allN.reduce((a,b)=>a+b,0)/allN.length);
-  const maxG=Math.max(...allG),maxN=Math.max(...allN);
+  const pm = curPeriodMult || 1;
+  // KNOWN_SITES의 개별 CPC 데이터 사용
+  const allG = sites.map(s => s.cpc ? Math.round(s.cpc.google.avg * pm) : 800);
+  const allN = sites.map(s => s.cpc ? Math.round(s.cpc.naver.avg  * pm) : 500);
+  const avgG = Math.round(allG.reduce((a,b)=>a+b,0)/allG.length);
+  const avgN = Math.round(allN.reduce((a,b)=>a+b,0)/allN.length);
+  const maxG = Math.max(...allG), maxN = Math.max(...allN);
+  const indMap = {};
+  INDUSTRY_MAP.forEach(i => indMap[i.key] = i.name);
   document.getElementById('siteStatCards').innerHTML=`
     <div class="stat"><div class="stat-icon" style="background:#e8f0ff">🔵</div><div><div class="stat-lbl">Google 평균 CPC</div><div class="stat-val">₩${fmt(avgG)}</div><div class="stat-sub">등록 사이트 평균</div></div></div>
     <div class="stat"><div class="stat-icon" style="background:#fee2e2">🔴</div><div><div class="stat-lbl">네이버 평균 CPC</div><div class="stat-val">₩${fmt(avgN)}</div><div class="stat-sub">등록 사이트 평균</div></div></div>
-    <div class="stat"><div class="stat-icon" style="background:#fef3c7">📈</div><div><div class="stat-lbl">Google 최고 CPC</div><div class="stat-val">₩${fmt(maxG)}</div><div class="stat-sub">금융 업종</div></div></div>
-    <div class="stat"><div class="stat-icon" style="background:#d1fae5">🏢</div><div><div class="stat-lbl">등록 사이트 수</div><div class="stat-val">${sites.length}개</div><div class="stat-sub">국내 주요 서비스</div></div></div>`;
+    <div class="stat"><div class="stat-icon" style="background:#fef3c7">📈</div><div><div class="stat-lbl">Google 최고 CPC</div><div class="stat-val">₩${fmt(maxG)}</div><div class="stat-sub">금융/통신 업종</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:#d1fae5">🏢</div><div><div class="stat-lbl">등록 사이트 수</div><div class="stat-val">${sites.length}개</div><div class="stat-sub">전체 등록 서비스</div></div></div>`;
 
-  // site cards
+  // site cards — KNOWN_SITES CPC 직접 사용
   let html='';
   for(const s of sites){
-    const gd=DATA.google.industries.find(i=>i.key===s.ind)||{cpc:800,ctr:3.5};
-    const nd=DATA.naver.industries.find(i=>i.key===s.ind)||{cpc:500,ctr:3.0};
-    const md=DATA.meta.industries.find(i=>i.key===s.ind)||{cpc:400,ctr:1.2};
-    const kd=DATA.kakao.industries.find(i=>i.key===s.ind)||{cpc:300,ctr:1.8};
-    const maxCpc=Math.max(gd.cpc,nd.cpc,md.cpc,kd.cpc);
-    const gW=Math.round(gd.cpc/maxCpc*100),nW=Math.round(nd.cpc/maxCpc*100);
-    const indName=(DATA.google.industries.find(i=>i.key===s.ind)||{name:s.ind}).name;
+    const gc = s.cpc ? Math.round(s.cpc.google.avg*pm) : 800;
+    const nc = s.cpc ? Math.round(s.cpc.naver.avg*pm)  : 500;
+    const mc = s.cpc ? Math.round(s.cpc.meta.avg*pm)   : 400;
+    const kc = s.cpc ? Math.round(s.cpc.kakao.avg*pm)  : 300;
+    const gMin = s.cpc ? Math.round(s.cpc.google.min*pm) : Math.round(gc*0.5);
+    const gMax = s.cpc ? Math.round(s.cpc.google.max*pm) : Math.round(gc*1.8);
+    const nMin = s.cpc ? Math.round(s.cpc.naver.min*pm)  : Math.round(nc*0.5);
+    const nMax = s.cpc ? Math.round(s.cpc.naver.max*pm)  : Math.round(nc*1.8);
+    const maxCpc = Math.max(gc,nc,mc,kc);
+    const gW = Math.round(gc/maxCpc*100), nW = Math.round(nc/maxCpc*100);
+    const gd = DATA.google.industries.find(i=>i.key===s.ind)||{ctr:3.5};
+    const nd = DATA.naver.industries.find(i=>i.key===s.ind)||{ctr:3.0};
+    const indName = indMap[s.ind] || s.ind;
     html+=`<div class="plat-card" style="cursor:pointer" onclick="setUrl('https://${s.domain}');document.querySelector('[data-sec=analyzer]').click()">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         <div style="width:38px;height:38px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);border:1px solid #ddd8f5;flex-shrink:0">${s.name.slice(0,2)}</div>
@@ -895,22 +910,22 @@ function renderSiteComparison(){
         <div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
             <span style="color:#4f8eff;font-weight:600">🔵 Google</span>
-            <span style="font-weight:700">₩${fmt(gd.cpc)}</span>
+            <span style="font-weight:700">₩${fmt(gc)}</span>
           </div>
           <div class="bar-bg"><div class="bar-fill" style="width:${gW}%;background:#4f8eff"></div></div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">₩${fmt(Math.round(gd.cpc*0.5))} ~ ₩${fmt(Math.round(gd.cpc*1.8))} · CTR ${gd.ctr}%</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">₩${fmt(gMin)} ~ ₩${fmt(gMax)} · CTR ${gd.ctr}%</div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
             <span style="color:#ef4444;font-weight:600">🔴 네이버</span>
-            <span style="font-weight:700">₩${fmt(nd.cpc)}</span>
+            <span style="font-weight:700">₩${fmt(nc)}</span>
           </div>
           <div class="bar-bg"><div class="bar-fill" style="width:${nW}%;background:#ef4444"></div></div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">₩${fmt(Math.round(nd.cpc*0.5))} ~ ₩${fmt(Math.round(nd.cpc*1.8))} · CTR ${nd.ctr}%</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">₩${fmt(nMin)} ~ ₩${fmt(nMax)} · CTR ${nd.ctr}%</div>
         </div>
         <div style="display:flex;gap:8px;margin-top:2px">
-          <span style="font-size:11px;background:#e8f0ff;color:#3b6fd4;border-radius:6px;padding:3px 8px;font-weight:600">Meta ₩${fmt(md.cpc)}</span>
-          <span style="font-size:11px;background:#fef9c3;color:#b45309;border-radius:6px;padding:3px 8px;font-weight:600">카카오 ₩${fmt(kd.cpc)}</span>
+          <span style="font-size:11px;background:#e8f0ff;color:#3b6fd4;border-radius:6px;padding:3px 8px;font-weight:600">Meta ₩${fmt(mc)}</span>
+          <span style="font-size:11px;background:#fef9c3;color:#b45309;border-radius:6px;padding:3px 8px;font-weight:600">카카오 ₩${fmt(kc)}</span>
         </div>
       </div>
     </div>`;
@@ -2359,7 +2374,67 @@ const PLATFORM_FOCUS = {
       campaigns:['채팅 알림 자동화','관심 상품 등록 리마인더','당근페이 이체 확인 알림톡','동네 인기 게시물 알림'],
       budget:'알림톡 위주. 서비스 내 알림 중심 운영.'
     }
-  }
+  },
+
+  // ── 통신사 ──
+  tworld: {
+    google: { types:['검색광고','YouTube 프리롤','Performance Max'], campaigns:['갤럭시·아이폰 출시 연계 검색광고','번호이동 혜택 키워드 집중','T멤버십 앱 설치 UAC','5G 요금제 비교 검색'], budget:'통신사 중 검색광고 비중 1위. 단말기+요금제 키워드 CPC 최상위권.' },
+    naver:  { types:['파워링크','브랜드 검색','쇼핑검색'], campaigns:['번호이동·기기변경 파워링크 최상위 입찰','갤럭시·아이폰 쇼핑검색 집행','T다이렉트샵 브랜드 검색 상시 운영','요금제 비교 키워드 파워링크'], budget:'네이버 단말기 쇼핑검색 집중. 요금제 키워드 경쟁 치열.' },
+    meta:   { types:['인스타그램 피드','릴스 광고'], campaigns:['MZ세대 5G 라이프 감성 광고','T멤버십 혜택 바이럴','아이돌 모델 활용 릴스'], budget:'MZ 타겟 인스타그램 중심. 브랜드 감성 광고 집행.' },
+    kakao:  { types:['카카오 비즈보드','알림톡','채널 메시지'], campaigns:['요금제 변경 알림톡 자동화','번호이동 프로모션 채널 메시지','T멤버십 포인트 적립 알림'], budget:'카카오 알림톡으로 기존 고객 리텐션 강화.' }
+  },
+  kt: {
+    google: { types:['검색광고','YouTube 프리롤','Performance Max'], campaigns:['인터넷+TV+모바일 결합 검색광고','갤럭시·아이폰 번호이동 혜택 키워드','기가인터넷 속도 비교 광고','KT닷컴 앱 설치 UAC'], budget:'결합상품 키워드 집중. 인터넷+모바일 번들 소재 중심.' },
+    naver:  { types:['파워링크','브랜드 검색','성과형 디스플레이'], campaigns:['번호이동 파워링크 집중 입찰','기가인터넷 키워드 상위 노출','KT샵 브랜드 검색 상시','단말기 쇼핑검색 집행'], budget:'네이버 결합상품 검색이 핵심 채널.' },
+    meta:   { types:['인스타그램 피드','동영상 광고'], campaigns:['가족결합 혜택 감성 광고','기가지니 AI 서비스 소개','MZ 5G 라이프 콘텐츠'], budget:'가족 타겟 감성 광고 집중.' },
+    kakao:  { types:['카카오 비즈보드','알림톡'], campaigns:['요금제 안내 알림톡','결합할인 안내 채널 메시지','단말기 교체 리마인더'], budget:'알림톡 기반 고객 리텐션.' }
+  },
+  lguplus: {
+    google: { types:['검색광고','YouTube 프리롤','UAC'], campaigns:['5G 요금제 비교 검색광고','아이돌라이브 앱 설치 UAC','번호이동 혜택 키워드','LGU+ 공식몰 쇼핑 검색'], budget:'MZ 타겟 5G 콘텐츠 광고 집중. 번호이동 키워드 공격적 입찰.' },
+    naver:  { types:['파워링크','쇼핑검색','성과형 디스플레이'], campaigns:['번호이동 파워링크','단말기 쇼핑검색','5G 요금제 키워드 집중','U+샵 브랜드 검색'], budget:'파워링크 번호이동 키워드 최상위권 입찰.' },
+    meta:   { types:['인스타그램 릴스','동영상 광고'], campaigns:['아이돌 모델 릴스 광고','5G 스트리밍 라이프 감성','U+아이돌라이브 바이럴'], budget:'MZ세대 인스타 릴스 집중. 아이돌 팬덤 타겟.' },
+    kakao:  { types:['카카오 비즈보드','알림톡'], campaigns:['U+멤버십 알림','요금제 변경 안내 알림톡','가족결합 혜택 채널 메시지'], budget:'알림톡 자동화로 고객 관리.' }
+  },
+
+  // ── 스마트폰 브랜드 ──
+  apple: {
+    google: { types:['브랜드 검색광고','Performance Max','YouTube 마스트헤드'], campaigns:['아이폰 신제품 출시 예약 판매','아이패드·맥 크로스셀 검색광고','Apple Store 방문 CTA','아이폰 vs 갤럭시 비교 키워드 방어'], budget:'신제품 출시 시즌(9~10월) Google 예산 급증. 브랜드 보호+신제품 캠페인 병행.' },
+    naver:  { types:['브랜드 검색','파워링크','쇼핑검색'], campaigns:['아이폰 키워드 브랜드 검색 상시','공식 유통사(SKT·KT·LGU+) 연계 쇼핑광고','아이폰 액세서리 쇼핑검색'], budget:'네이버 아이폰 키워드 방어 광고. 통신사와 협력 집행.' },
+    meta:   { types:['인스타그램 피드','릴스','동영상 광고'], campaigns:['신제품 감성 언팩 릴스','카메라 기능 비포애프터 콘텐츠','애플 생태계 라이프스타일 광고'], budget:'감성 비주얼 중심. 릴스+피드 혼합 집행.' },
+    kakao:  { types:['카카오 비즈보드','채널 메시지'], campaigns:['신제품 출시 알림','Apple Store 이벤트 안내'], budget:'카카오 비중 낮음. 신제품 출시 시즌 집중 집행.' }
+  },
+  samsung: {
+    google: { types:['검색광고','Google 쇼핑','YouTube 마스트헤드','Performance Max'], campaigns:['갤럭시 신제품 언팩 연계 검색','삼성닷컴 쇼핑 광고','갤럭시 vs 아이폰 비교 키워드','삼성전자 가전 쇼핑광고'], budget:'연간 광고비 규모 최상위. 신제품 출시 시즌 YouTube 마스트헤드 집중.' },
+    naver:  { types:['브랜드 검색','파워링크','쇼핑검색'], campaigns:['갤럭시 브랜드 검색 상시 방어','삼성닷컴 쇼핑검색 집중','갤럭시·가전 카테고리 쇼핑광고'], budget:'네이버 갤럭시 키워드 브랜드 보호 + 쇼핑광고 병행.' },
+    meta:   { types:['인스타그램 릴스','동영상 광고','카탈로그'], campaigns:['갤럭시 신제품 감성 릴스','폴더블폰 혁신 영상 광고','삼성닷컴 리타겟팅 카탈로그'], budget:'글로벌 릴스 캠페인 대규모 집행.' },
+    kakao:  { types:['카카오 비즈보드','채널 메시지','알림톡'], campaigns:['갤럭시 신제품 출시 비즈보드','삼성닷컴 채널 팔로워 메시지'], budget:'카카오 신제품 출시 시즌 비즈보드 집중.' }
+  },
+  xiaomi: {
+    google: { types:['검색광고','Google 쇼핑','YouTube 광고'], campaigns:['샤오미 한국 출시 제품 쇼핑광고','가성비 스마트폰 비교 키워드','Mi 생태계 기기 쇼핑'], budget:'한국 시장 점유율 확대 목적. 가성비 키워드 집중.' },
+    naver:  { types:['파워링크','쇼핑검색'], campaigns:['샤오미 스마트폰 쇼핑검색','가성비 키워드 파워링크','홍미노트 시리즈 검색광고'], budget:'네이버 쇼핑검색 가성비 포지션 강화.' },
+    meta:   { types:['인스타그램 피드','동영상'], campaigns:['IoT 스마트홈 라이프 광고','스펙 비교 영상 광고','얼리어답터 타겟 캠페인'], budget:'테크 관심층 인스타 집중.' },
+    kakao:  { types:['카카오 비즈보드'], campaigns:['신제품 출시 알림'], budget:'카카오 비중 낮음.' }
+  },
+
+  // ── 국내 주요 쇼핑 ──
+  elevenst: {
+    google: { types:['검색광고','Google 쇼핑','Performance Max'], campaigns:['십일절(11.11) Performance Max 집중','Amazon 직구 연계 글로벌 쇼핑광고','스마트폰·가전 쇼핑광고 상시','SK페이 혜택 검색광고'], budget:'십일절(11.11) 시즌 예산 연간 최대. Google+Naver 쇼핑 병행.' },
+    naver:  { types:['쇼핑검색','파워링크','브랜드 검색'], campaigns:['십일절 쇼핑검색 집중 입찰','스마트폰 카테고리 쇼핑광고','11번가 브랜드 검색 상시','SK페이 혜택 파워링크'], budget:'네이버 쇼핑검색 카테고리 입찰 집중.' },
+    meta:   { types:['카탈로그 DPA','인스타그램 피드'], campaigns:['장바구니 이탈 리타겟팅','십일절 카운트다운 광고','신상품 카탈로그 광고'], budget:'리타겟팅 중심 Meta 집행.' },
+    kakao:  { types:['카카오 비즈보드','알림톡'], campaigns:['십일절 카운트다운 비즈보드','쿠폰 발급 알림톡','관심상품 가격 알림'], budget:'십일절 알림톡·비즈보드 집중.' }
+  },
+  ssg: {
+    google: { types:['검색광고','Google 쇼핑','YouTube'], campaigns:['SSG닷컴 식품·명품 쇼핑광고','이마트 신선식품 검색광고','쓱배송 브랜드 검색','신세계백화점 프리미엄 쇼핑'], budget:'프리미엄 포지션 유지. 식품+명품 카테고리 CPC 높음.' },
+    naver:  { types:['쇼핑검색','브랜드 검색','파워링크'], campaigns:['SSG 쇼핑검색 프리미엄 포지션','이마트몰 브랜드 검색','신세계포인트 혜택 파워링크'], budget:'네이버 프리미엄 쇼핑검색 집중.' },
+    meta:   { types:['인스타그램 피드','카탈로그'], campaigns:['프리미엄 식품 비주얼 광고','쓱배송 감성 광고','명품 패션 카탈로그'], budget:'프리미엄 감성 비주얼 Meta 집행.' },
+    kakao:  { types:['카카오 비즈보드','알림톡'], campaigns:['쓱세일 알림톡','신상품 채널 메시지','신세계포인트 적립 알림'], budget:'기존 고객 리텐션 알림톡 집중.' }
+  },
+  danawa: {
+    google: { types:['검색광고','Google 디스플레이'], campaigns:['IT 제품 가격 비교 키워드 검색광고','다나와 앱 설치 캠페인','가격 알림 서비스 광고'], budget:'정보성 트래픽 중심. CPC 낮고 자연 유입 비중 높음.' },
+    naver:  { types:['파워링크','브랜드 검색'], campaigns:['다나와 브랜드 검색','최저가 키워드 파워링크','IT 제품 비교 검색 집행'], budget:'네이버 IT 제품 비교 검색 포지션 강화.' },
+    meta:   { types:['페이스북 피드'], campaigns:['IT 제품 구매 관심층 타겟'], budget:'Meta 비중 낮음.' },
+    kakao:  { types:['카카오 비즈보드'], campaigns:['가격 알림 서비스 홍보'], budget:'카카오 비중 낮음.' }
+  },
 };
 
 // ── 사이트별 이벤트 히스토리 데이터 ──
@@ -2435,7 +2510,45 @@ const EVENTS = [
   { site:'class101', name:'클래스101+ 구독 론칭', period:'2024-01~03', year:2024, platforms:['google','meta','naver','kakao'], type:'서비스 론칭', desc:'월정액 구독 서비스 론칭 캠페인. 무료 체험 광고 집중. 취미 키워드 검색광고 확대.', impact:'high' },
   { site:'class101', name:'시즌 세일(블프)', period:'2024-11-11~11-29', year:2024, platforms:['meta','naver','google','kakao'], type:'시즌 세일', desc:'빼빼로데이+블랙프라이데이 시즌. 강의 최대 80% 할인. 채널 메시지 대규모 발송.', impact:'mid' },
   { site:'class101', name:'2025 취미 클래스 확대 캠페인', period:'2025-03~05', year:2025, platforms:['meta','google','naver'], type:'서비스 확장', desc:'취미 카테고리 확대. 셀럽 강사 영입 연계 마케팅. 인스타그램 완성작 공유 바이럴.', impact:'mid' },
+
+  // ── Apple ──
+  { site:'apple', name:'아이폰 16 출시 캠페인', period:'2024-09-20~10-31', year:2024, platforms:['google','naver','meta','tv'], type:'신제품 출시', desc:'아이폰16 시리즈 국내 출시. 통신 3사 공동 번호이동 캠페인 연계. Google 검색광고 아이폰 키워드 최고 경쟁. TV 감성 광고 대규모 집행.', impact:'high' },
+  { site:'apple', name:'애플 블랙프라이데이', period:'2024-11-29~12-02', year:2024, platforms:['google','naver','meta'], type:'시즌 세일', desc:'Apple 공식 블프 할인. 기프트카드 증정 이벤트. 검색광고 아이폰·맥북 키워드 집중.', impact:'mid' },
+  { site:'apple', name:'아이폰 17 출시 캠페인', period:'2025-09-19~10-31', year:2025, platforms:['google','naver','meta','tv'], type:'신제품 출시', desc:'아이폰17 시리즈 출시. AI 기능(Apple Intelligence) 국내 지원 강조. 통신사 연계 번호이동 혜택 광고 최대 집행.', impact:'high' },
+  { site:'apple', name:'2026 아이폰18 사전예약', period:'2026-09~10', year:2026, platforms:['google','naver','meta','tv'], type:'신제품 출시', desc:'아이폰18 시리즈 출시 예정. 폴더블 아이폰 루머 연계 관심 집중. CPC 전년 대비 +14% 예상.', impact:'high' },
+
+  // ── Samsung ──
+  { site:'samsung', name:'갤럭시 S24 언팩', period:'2024-01-17~02-28', year:2024, platforms:['google','naver','meta','tv'], type:'신제품 출시', desc:'갤럭시 S24 시리즈 국내 출시. AI 기능(갤럭시 AI) 강조 캠페인. TV+유튜브 마스트헤드 대규모 집행. 검색광고 갤럭시 키워드 집중.', impact:'high' },
+  { site:'samsung', name:'갤럭시 Z 폴드·플립6 출시', period:'2024-07-10~08-31', year:2024, platforms:['google','naver','meta','tv'], type:'신제품 출시', desc:'폴더블폰 최신작 출시. 접는폰 혁신 포지션 강조. 인스타그램 비주얼 광고+유튜브 프리롤 집중.', impact:'high' },
+  { site:'samsung', name:'갤럭시 S25 언팩', period:'2025-01-22~03-31', year:2025, platforms:['google','naver','meta','tv'], type:'신제품 출시', desc:'갤럭시 S25 시리즈 출시. 퀄컴 Snapdragon 8 Elite 탑재 강조. AI 기능 확대 캠페인.', impact:'high' },
+  { site:'samsung', name:'갤럭시 S26 출시', period:'2026-01~03', year:2026, platforms:['google','naver','meta','tv'], type:'신제품 출시', desc:'갤럭시 S26 출시 예정. AI 카메라+위성통신 기능 강조 예상. 연간 최대 광고비 집행 시즌.', impact:'high' },
+
+  // ── SKT T월드 ──
+  { site:'tworld', name:'번호이동 갤럭시 S24 프로모션', period:'2024-02~04', year:2024, platforms:['naver','google','kakao','tv'], type:'단말기 출시 연계', desc:'갤럭시 S24 출시 연계 번호이동 공시지원금 캠페인. 네이버 파워링크 갤럭시+번호이동 키워드 최상위 입찰. TV 광고 대규모 집행.', impact:'high' },
+  { site:'tworld', name:'T멤버십 5G 가입 캠페인', period:'2024-05~07', year:2024, platforms:['naver','google','meta','kakao'], type:'요금제 가입', desc:'5G 요금제 가입 유도 + T멤버십 혜택 강조 캠페인. Google UAC 앱 설치 집중. 카카오 알림톡 기존 고객 업그레이드 유도.', impact:'mid' },
+  { site:'tworld', name:'아이폰 16 번호이동 캠페인', period:'2024-09~10', year:2024, platforms:['naver','google','tv','kakao'], type:'단말기 출시 연계', desc:'아이폰16 출시 연계 번호이동 혜택. KT·LGU+와 동일 키워드 경쟁 최고조. 파워링크 아이폰 키워드 최상위 경쟁.', impact:'high' },
+  { site:'tworld', name:'2025 번호이동 갤럭시 S25 프로모션', period:'2025-01~03', year:2025, platforms:['naver','google','tv','kakao'], type:'단말기 출시 연계', desc:'갤럭시 S25 연계 번호이동 집중 캠페인. 2년 약정 요금 절감 강조.', impact:'high' },
+
+  // ── KT ──
+  { site:'kt', name:'KT 기가인터넷+갤럭시 결합 캠페인', period:'2024-03~05', year:2024, platforms:['naver','google','tv'], type:'결합 상품', desc:'인터넷+모바일+TV 결합 할인 집중 캠페인. 네이버 파워링크 인터넷+갤럭시 결합 키워드 집중.', impact:'mid' },
+  { site:'kt', name:'KT 아이폰16 번호이동', period:'2024-09~10', year:2024, platforms:['naver','google','tv','kakao'], type:'단말기 출시 연계', desc:'아이폰16 출시 연계 KT 번호이동 혜택. 통신 3사 최고 CPC 경쟁 시즌. TV 브랜딩+검색광고 병행.', impact:'high' },
+  { site:'kt', name:'2025 KT Y 요금제 MZ 캠페인', period:'2025-04~06', year:2025, platforms:['meta','google','naver'], type:'요금제 출시', desc:'MZ세대 타겟 Y 요금제 출시 캠페인. 인스타그램+유튜브 집중. 유튜브 프리미엄 번들 강조.', impact:'mid' },
+
+  // ── LG U+ ──
+  { site:'lguplus', name:'U+ 아이돌라이브 캠페인', period:'2024-04~06', year:2024, platforms:['meta','google','naver'], type:'콘텐츠 서비스', desc:'아이돌라이브 독점 콘텐츠 강조 캠페인. 인스타그램 K팝 팬덤 타겟 광고. 10~25세 여성 집중.', impact:'mid' },
+  { site:'lguplus', name:'아이폰16 번호이동 캠페인', period:'2024-09~10', year:2024, platforms:['naver','google','tv','meta'], type:'단말기 출시 연계', desc:'아이폰16 출시 연계 LGU+ 번호이동. 5G 무제한 요금제 혜택 강조.', impact:'high' },
+  { site:'lguplus', name:'2025 U+ 5G 갤럭시 S25 프로모션', period:'2025-01~03', year:2025, platforms:['naver','google','tv','kakao'], type:'단말기 출시 연계', desc:'갤럭시 S25 출시 연계. 5G 특화 혜택 + 아이돌라이브 번들 강조.', impact:'mid' },
+
+  // ── 11번가 ──
+  { site:'elevenst', name:'11번가 십일절(11.11)', period:'2024-11-01~11-11', year:2024, platforms:['naver','google','meta','kakao','tv'], type:'자체 시즌 세일', desc:'연간 최대 쇼핑 이벤트 십일절. 전 카테고리 최대 90% 할인. 네이버+구글 쇼핑광고 집중. TV+유튜브 브랜딩 대규모.', impact:'high' },
+  { site:'elevenst', name:'Amazon 글로벌 스토어 론칭 연계', period:'2024-05~07', year:2024, platforms:['google','naver','meta'], type:'서비스 확장', desc:'Amazon 글로벌 스토어 국내 서비스 확장. 해외 직구 키워드 검색광고 집중. 아마존+11번가 직구 혜택 강조.', impact:'mid' },
+  { site:'elevenst', name:'2025 십일절(11.11)', period:'2025-11-01~11-11', year:2025, platforms:['naver','google','meta','kakao','tv'], type:'자체 시즌 세일', desc:'2025 십일절. 전년 대비 예산 확대. Performance Max 집중 집행. 스마트폰·가전 카테고리 CPC 급등.', impact:'high' },
+
+  // ── 다나와 ──
+  { site:'danawa', name:'연간 IT 가격비교 캠페인', period:'2024-01~12', year:2024, platforms:['google','naver'], type:'브랜드 광고', desc:'다나와 가격비교 서비스 상시 브랜드 광고. Google 디스플레이 IT 관심층 타겟. 연간 지속 집행.', impact:'mid' },
+  { site:'danawa', name:'갤럭시·아이폰 출시 특집', period:'2024-09~10', year:2024, platforms:['naver','google'], type:'시즌 집중', desc:'아이폰16+갤럭시 출시 시즌 가격비교 트래픽 급등. 검색광고+SEO 동시 집중.', impact:'mid' },
 ];
+
 
 // ── 이벤트 분석 렌더링 ──
 const IMPACT_MAP = { high:{ label:'대형', bg:'#fce8e6', color:'#c5221f', border:'#f4b8b5' }, mid:{ label:'중형', bg:'#fef7e0', color:'#b06000', border:'#f5d891' }, low:{ label:'소형', bg:'#e6f4ea', color:'#137333', border:'#b7dfbf' } };
